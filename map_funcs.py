@@ -1,7 +1,6 @@
 import numpy as np
 import Ngl
 import math
-import masking_funcs
 import sys
 from copy import deepcopy
 
@@ -12,7 +11,7 @@ if Ngl.__version__ == "1.3.1":
     graphicfiletype = "newpdf"
 elif Ngl.__version__ == "1.4.0":
     graphicfiletype = "newpdf"    
-elif Ngl.__version__ == "1.5.0":
+elif Ngl.__version__ == "1.5.0" or Ngl.__version__ == "1.5.0-beta":
     graphicfiletype = "pdf"    
 else:
     graphicfiletype = "ps"
@@ -20,6 +19,9 @@ else:
 x11_window_list = []  ### this is a running tally of what x11 workstations have been created by this module, for easy clearing of them
 
 ### declare a global page width and height (default is square)
+# page_width = 8.5
+# page_height = 11.
+# ### declare a global page width and height (default is square)
 page_width = 7.
 page_height = 7.
 
@@ -152,7 +154,8 @@ def parse_colormap(colormap):
                                     [102, 102, 102], [97, 97, 97], [92, 92, 92], [87, 87, 87], [82, 82, 82], [77, 77, 77], [71, 71, 71], [66, 66, 66], [61, 61, 61], [56, 56, 56], [51, 51, 51],
                                     [46, 46, 46], [41, 41, 41], [36, 36, 36], [31, 31, 31], [26, 26, 26], [20, 20, 20], [15, 15, 15], [10, 10, 10], [5, 5, 5], [0, 0, 0]]) / 256.
         else:
-            raise RuntimeError('colormap name must be either a pyngl named colormap or else from the list of user-defined ones')
+            #raise RuntimeError('colormap name must be either a pyngl named colormap or else from the list of user-defined ones')
+            colorvalues = colormap
         return colorvalues
         
 
@@ -219,6 +222,12 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             lonlimits=[-125.,-112.5]
             latlimits=[31., 43.]
             projection="CylindricalEquiDistant"
+        elif specialprojection=="westus":
+            loncenter=-114.25
+            latcenter=40.
+            lonlimits=[-123.5,-104.]
+            latlimits=[31., 49.]
+            projection="CylindricalEquiDistant"
         elif specialprojection=="samer_satellite":
             latlimits=[-60.,15.]
             lonlimits=[-90,-30]
@@ -261,6 +270,12 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             lonlimits=[95.,180.]
             latlimits=[-50., 10.]
             projection="CylindricalEquiDistant"
+        elif specialprojection=="boreal_na":
+            latlimits=[50.,80.]
+            lonlimits=[-170.,-90.]
+            projection='satellite'
+            latcenter=65.
+            loncenter=-130.
         else:
             raise NotImplmentedError
     # next set up the map projection based on arguments
@@ -276,7 +291,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
     if thinshorelines:
         resources.mpGeophysicalLineThicknessF = 0.2
     else:
-        resources.mpGeophysicalLineThicknessF = 1.5        
+        resources.mpGeophysicalLineThicknessF = 2.        
     #
     if OutlineBoundarySets != None:
         resources.mpOutlineBoundarySets = OutlineBoundarySets
@@ -525,7 +540,25 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
         rlist.wkColorMap = cmap_new
         Ngl.set_values(wks,rlist)
 
-    # if add_colors != None:
+    if add_colors != None:
+        print(add_colors.shape)
+        cmap = Ngl.get_MDfloat_array(wks, "wkColorMap")
+        cmap_length_old = cmap.shape[0]
+        cmap_length_new = cmap_length_old + add_colors.shape[0]
+        cmap_new = np.zeros([cmap_length_new, 3])
+        cmap_new[0:cmap_length_old,:] = cmap[0:cmap_length_old,:]
+        cmap_new[cmap_length_old:cmap_length_old+add_colors.shape[0],:] = add_colors[:]
+        print(cmap_new.shape)
+        rlist = Ngl.Resources()
+        rlist.wkColorMap = cmap_new
+        Ngl.set_values(wks,rlist)
+        if reverse_colors:
+            mp_resources.nglSpreadColorStart = -1 - add_colors.shape[0]
+            mp_resources.nglSpreadColorEnd = 2
+        else:
+            mp_resources.nglSpreadColorStart = 2
+            mp_resources.nglSpreadColorEnd = -1 - add_colors.shape[0]
+            
         
 
     plot = Ngl.contour_map(wks,data,mp_resources)
@@ -679,7 +712,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None):
 
     if file == None:
         plot_type = "x11"
@@ -688,13 +721,13 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
     if  Nonemask:
         if isinstance(x, list):
-            x = masking_funcs.Nonemask(x)            
+            x = Nonemask(x)            
         if isinstance(y, list):
-            y = masking_funcs.Nonemask(y)
+            y = Nonemask(y)
         if isinstance(overlay_x, list):
-            overlay_x = masking_funcs.Nonemask(overlay_x)
+            overlay_x = Nonemask(overlay_x)
         if isinstance(overlay_y, list):
-            overlay_y = masking_funcs.Nonemask(overlay_y)
+            overlay_y = Nonemask(overlay_y)
 
     if isinstance(x, np.ma.masked_array) or isinstance(y, np.ma.masked_array):
         masked_input = True
@@ -821,6 +854,35 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         else:
             resources.vpWidthF =  0.6  * aspect_ratio
 
+    if type(shaded_vectors_data) != type(None):
+        # set up labelbar as the colorbar
+        lb_res = Ngl.Resources()
+        if subtitle != None:
+            lb_res.lbTitleString = subtitle
+        #
+        lb_res.lbOrientation         = "horizontal"
+        lb_res.lbPerimThicknessF     = 2.
+        lb_res.lbTitleFontThicknessF = 2.
+        lb_res.lbLabelStride         = 1
+        lb_res.lbRightMarginF        = 0.15
+        lb_res.lbLeftMarginF         = 0.15
+        lb_res.lbTopMarginF           = 0.
+        lb_res.lbBottomMarginF        = 0.5
+        lb_res.lbLabelFontHeightF     = 0.02
+        #        
+        nlevels = len(shaded_vectors_levels)
+        cmap = Ngl.retrieve_colormap(wks)
+        nbars = nlevels+1
+        colorbars = np.arange(nbars) / (nbars-1.) * (cmap.shape[0]-3)
+        colorbars_int = np.array(colorbars+2., dtype=np.int32)
+        colorbar_x = xrange[0] + (xrange[1]-xrange[0]) * 0.1
+        colorbar_y = yrange[0]
+        level_label_string_list = []
+        for i in range(len(shaded_vectors_levels)):
+            level_label_string_list.append(str(shaded_vectors_levels[i]))
+        pid = Ngl.labelbar_ndc(wks, nbars, level_label_string_list, colorbar_x, colorbar_y, lb_res)
+
+
 
     if type(shaded_dot_data) == type(None):
         if not (box_whisker_plot or stack_shade_values):
@@ -847,7 +909,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             xrange = [np.ma.min(x), np.ma.max(x)]
         if yrange == None:
             yrange = [np.ma.min(y), np.ma.max(y)]
-        dummies = np.ma.masked_all(3)
+        if not (xlog or ylog):
+            dummies = np.ma.masked_all(3)
+        else:
+            dummies = np.array([1e-30, 2e-30])
         plot = Ngl.xy(wks, dummies, dummies, resources)
         #
         # now set up labelbar as the colorbar
@@ -1036,11 +1101,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     resources.gsLineDashPattern = overlay_dashpattern
                 ### need to manually handle masked values since add_polyline doesn't seem to do that
                 if isinstance(overlay_y, np.ndarray) and isinstance(overlay_x, np.ndarray):
-                    polyline_x, polyline_y = masking_funcs.handle_masks(overlay_x, overlay_y)
+                    polyline_x, polyline_y = handle_masks(overlay_x, overlay_y)
                 elif isinstance(overlay_y, list) and isinstance(overlay_x, list):
-                    maskedarray_overlayx = masking_funcs.Nonemask(overlay_x)
-                    maskedarray_overlayy = masking_funcs.Nonemask(overlay_y)
-                    polyline_x, polyline_y = masking_funcs.handle_masks(maskedarray_overlayx, maskedarray_overlayy)
+                    maskedarray_overlayx = Nonemask(overlay_x)
+                    maskedarray_overlayy = Nonemask(overlay_y)
+                    polyline_x, polyline_y = handle_masks(maskedarray_overlayx, maskedarray_overlayy)
                 else:
                     raise RuntimeError
                 if overlay_dots:
@@ -1058,7 +1123,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                         resources.gsMarkerIndex = 1
                         resources.gsMarkerSizeF = dotsize * 1.5
                     else:
-                        resources.gsLineThicknessF = overlay_linethickness
+                        if type(overlay_linethickness) == type(1.):
+                            resources.gsLineThicknessF = overlay_linethickness
+                        else:
+                            resources.gsLineThicknessF = overlay_linethickness[i]                            
                     if overlay_color != None:
                         if type(overlay_color) == int or type(overlay_color) == type('a string'):
                             if overlay_color >= 0 or type(overlay_color) == type('a string'):
@@ -1072,7 +1140,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     if overlay_dashpattern != None:
                         resources.gsLineDashPattern = overlay_dashpattern[i]
                     ### need to manually handle masked values since add_polyline doesn't seem to do that
-                    polyline_x, polyline_y = masking_funcs.handle_masks(overlay_x, overlay_y[i,:])
+                    polyline_x, polyline_y = handle_masks(overlay_x, overlay_y[i,:])
                     if overlay_dots:
                         pline = Ngl.add_polymarker(wks, plot, polyline_x, polyline_y, resources)
                     else:
@@ -1102,7 +1170,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                         resources.gsMarkerIndex = 1
                         resources.gsMarkerSizeF = dotsize * 1.5
                     else:
-                        resources.gsLineThicknessF = overlay_linethickness
+                        if type(overlay_linethickness) == type(1.):
+                            resources.gsLineThicknessF = overlay_linethickness
+                        else:
+                            resources.gsLineThicknessF = overlay_linethickness[i]                            
                     if overlay_color != None:
                         if type(overlay_color) == int or type(overlay_color) == type("string"):
                             if overlay_color >= 0:
@@ -1114,11 +1185,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                         resources.gsLineDashPattern = overlay_dashpattern[i]
                     ### need to manually handle masked values since add_polyline doesn't seem to do that
                     if not overlaydata_list:
-                        polyline_x, polyline_y = masking_funcs.handle_masks(overlay_x[i,:], overlay_y[i,:])
+                        polyline_x, polyline_y = handle_masks(overlay_x[i,:], overlay_y[i,:])
                     else:
-                        maskedarray_overlayx = masking_funcs.Nonemask(overlay_x[i])
-                        maskedarray_overlayy = masking_funcs.Nonemask(overlay_y[i])
-                        polyline_x, polyline_y = masking_funcs.handle_masks(maskedarray_overlayx, maskedarray_overlayy)
+                        maskedarray_overlayx = Nonemask(overlay_x[i])
+                        maskedarray_overlayy = Nonemask(overlay_y[i])
+                        polyline_x, polyline_y = handle_masks(maskedarray_overlayx, maskedarray_overlayy)
                     if overlay_dots:
                         pline = Ngl.add_polymarker(wks, plot, polyline_x, polyline_y, resources)
                     else:
@@ -1169,7 +1240,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 if overlay_color != None:
                     resources.gsLineColor = overlay_color
                 ### need to manually handle masked values since add_polyline doesn't seem to do that
-                polyline_x, polyline_y = masking_funcs.handle_masks(overlay_x, overlay_y)
+                polyline_x, polyline_y = handle_masks(overlay_x, overlay_y)
                 pline = Ngl.add_polyline(wks, plot2, polyline_x, polyline_y, resources)
             elif ndims_overlay_y == 2 and ndims_overlay_x == 1:
                 shape_overlay_y = overlay_y.shape
@@ -1181,7 +1252,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                         if overlay_color[i] >= 0:
                             resources.gsLineColor = overlay_color[i]
                     ### need to manually handle masked values since add_polyline doesn't seem to do that
-                    polyline_x, polyline_y = masking_funcs.handle_masks(overlay_x, overlay_y[i,:])
+                    polyline_x, polyline_y = handle_masks(overlay_x, overlay_y[i,:])
                     pline = Ngl.add_polyline(wks, plot2, polyline_x, polyline_y, resources)
             else:
                 raise NotImplementedError
@@ -1198,7 +1269,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 inset_title_y = max(yrange) - (max(yrange)-min(yrange)) * 0.05
         resources = Ngl.Resources()
         resources.txFontHeightF = inset_title_fontsize
-        resources.txJust = "CenterRight"
+        resources.txJust = inset_textjust
         Ngl.add_text(wks,plot,inset_title,inset_title_x,inset_title_y,resources)
         
     if not labels==None:
@@ -1587,14 +1658,16 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
     if vband != None:
         vband_res = Ngl.Resources()
-        vband_res.gsFillIndex = 17
+        # vband_res.gsFillIndex = 17
+        vband_res.gsFillColor = [0.85, 0.85, 0.85]
         zlx = [vband[0], vband[1], vband[1], vband[0], vband[0]]
         zly = [yrange[0], yrange[0], yrange[1], yrange[1], yrange[0]]
         Ngl.add_polygon(wks,plot, zlx, zly, vband_res)
 
     if hband != None:
         hband_res = Ngl.Resources()
-        hband_res.gsFillIndex = 17
+        # hband_res.gsFillIndex = 17
+        hband_res.gsFillColor = [0.85, 0.85, 0.85]        
         zly = [hband[0], hband[1], hband[1], hband[0], hband[0]]
         zlx = [xrange[0], xrange[0], xrange[1], xrange[1], xrange[0]]
         Ngl.add_polygon(wks,plot, zlx, zly, hband_res)
@@ -1620,7 +1693,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     if shaded_dot_data_flat[i] > shaded_dot_levels[j]:
                         marker_colorlevel[i] = marker_colorlevel[i]+1
                 resources = Ngl.Resources()
-                resources.gsMarkerSizeF = dotsize
+                resources.gsMarkerSizeF = dotsize / 2.
                 resources.gsMarkerIndex = 16
                 resources.gsMarkerColor = colorbars_int[marker_colorlevel[i]]
                 pmarker = Ngl.add_polymarker(wks, plot, x_flat[i], y_flat[i], resources)
@@ -1642,14 +1715,49 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             overlay_vectors_arrowheadlength = 0.1
             overlay_vectors_arrowheadwidth = 0.1
         for i in range(narrows):
+            arrow_res = Ngl.Resources()
             try:
                 if overlay_vectors_forwards:
                     arrow_x, arrow_y = make_arrow(overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1], overlay_vectors_arrowheadlength, overlay_vectors_arrowheadwidth)
                 else:
                     arrow_x, arrow_y = make_arrow(overlay_vectors_x[i,1], overlay_vectors_y[i,1], overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_arrowheadlength, overlay_vectors_arrowheadwidth)
-                pline = Ngl.polyline(wks,plot,arrow_x,arrow_y)
+                if type(shaded_vectors_data) != type(None):
+                    marker_colorlevel = 0
+                    for level_j in range(len(shaded_vectors_levels)):
+                         if shaded_vectors_data[i] > shaded_vectors_levels[level_j]:
+                             marker_colorlevel = marker_colorlevel+1
+                    arrow_res.gsLineColor = colorbars_int[marker_colorlevel]
+                pline = Ngl.polyline(wks,plot,arrow_x,arrow_y, arrow_res)
             except:
                 print('had to skip an arrow: ', overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1])
+
+    if (overlay_ellipses_x != None) and (overlay_ellipses_y != None):
+        # draw ellipses on plot.  
+        if overlay_ellipses_x.shape != overlay_ellipses_y.shape:
+            raise RuntimeError
+        nellipses = len(overlay_ellipses_x)
+        for i in range(nellipses):
+            ellipse_res = Ngl.Resources()
+            if overlay_ellipse_thickness != None:
+                ellipse_res.gsLineThicknessF=overlay_ellipse_thickness
+            # try:
+            ellipse_x, ellipse_y = make_ellipse(overlay_ellipses_x[i], overlay_ellipses_y[i], overlay_ellipses_xaxis[i], overlay_ellipses_yaxis[i], angle=overlay_ellipses_angle[i])
+            if not overlay_ellipses_filled:
+                pline = Ngl.polyline(wks,plot,ellipse_x,ellipse_y, ellipse_res)
+            else:
+                if overlay_ellipses_opacity != None:
+                    ellipse_res.gsFillOpacityF = overlay_ellipses_opacity
+                    ellipse_res.gsFillColor = "White"
+                    # ellipse_res_2 = Ngl.Resources()
+                    # ellipse_res_2.gsFillOpacityF = .4
+                    # ellipse_res_2.gsFillColor = "white"                
+                    # pgon =  Ngl.polygon(wks,plot,ellipse_x,ellipse_y, ellipse_res_2)
+                pgon =  Ngl.polygon(wks,plot,ellipse_x,ellipse_y, ellipse_res)
+                pline = Ngl.polyline(wks,plot,ellipse_x,ellipse_y, ellipse_res)
+            # except:
+            #     print('had to skip an ellipse: ', overlay_ellipses_x[i], overlay_ellipses_y[i], overlay_ellipses_x[i], overlay_ellipses_y[i])
+
+
                 
     Ngl.draw(plot)
 
@@ -2166,7 +2274,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
 
 ################
-def fill_nomap(data, x, y, contour_fill=False, contour=True, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None):
+def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None):
     IM = x.shape[0]
     JM = y.shape[0]
     data = np.squeeze(data[:])
@@ -2193,7 +2301,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=True, levels=None, file=N
 
     resources = Ngl.Resources()
     resources.cnFillOn          = True
-
+    resources.cnLinesOn         = contour
     
     if pixels:
         resources.cnFillMode        = "CellFill"
@@ -2294,6 +2402,23 @@ def fill_nomap(data, x, y, contour_fill=False, contour=True, levels=None, file=N
         colormap = parse_colormap(colormap)
         Ngl.define_colormap(wks, colormap)
 
+    if expand_colormap_middle != None:
+        cmap = Ngl.get_MDfloat_array(wks, "wkColorMap")
+        cmap_length_old = cmap.shape[0]
+        center = (cmap_length_old - 1 ) / 2 + 1
+        cmap_length_new = cmap_length_old + expand_colormap_middle - 1
+        cmap_new = np.zeros([cmap_length_new, 3])
+        cmap_new[0:center,:] = cmap[0:center,:]
+        cmap_new[center:center+expand_colormap_middle,:] = cmap[center,:]
+        cmap_new[center+expand_colormap_middle:cmap_length_new,:] = cmap[center+1:cmap_length_old,:]
+        rlist = Ngl.Resources()
+        rlist.wkColorMap = cmap_new
+        Ngl.set_values(wks,rlist)
+
+    if reverse_colors:
+        resources.nglSpreadColorStart = -1
+        resources.nglSpreadColorEnd = 2
+
     plot = Ngl.contour(wks,data,resources)
 
     if overlay_contour_data != None:
@@ -2326,13 +2451,158 @@ def fill_nomap(data, x, y, contour_fill=False, contour=True, levels=None, file=N
         if overlay_contour_levels != None:
             resources.cnLevelSelectionMode      = 'ExplicitLevels'
             resources.cnLevels = overlay_contour_levels
+
+        resources.cnLineLabelsOn            = linelabels
         
         resources.cnFillOn          = False
         resources.cnLineThicknessF  = 3.0
-    
-        contour_overlay = Ngl.contour(wks, overlay_contour_data, resources)
-        Ngl.overlay(plot,contour_overlay)
 
+        if type(overlay_contour_data) != type([]):
+            contour_overlay = Ngl.contour(wks, overlay_contour_data, resources)
+            Ngl.overlay(plot,contour_overlay)
+        else:
+            for list_i in range(len(overlay_contour_data)):
+                if overlay_color_list != None:
+                    resources.cnLineColor = overlay_color_list[list_i]
+                contour_overlay = Ngl.contour(wks, overlay_contour_data[list_i], resources)        
+                Ngl.overlay(plot,contour_overlay)
+                    
+
+
+    if not (type(overlay_x)==type(None) and type(overlay_y)==type(None)):
+        ### overlay line(s) on top. if more than one line, have shape of [a,b]
+        ### where a is the number of lines and b is the number of points in each line
+        try:
+            ndims_overlay_y = np.size(overlay_y.shape)
+        except AttributeError:
+            ## handle case if overlay_y is a list.  assume it is a 2-d list
+            if isinstance(overlay_y, list):
+                if type(overlay_y[0]) == list:
+                    ndims_overlay_y = 2
+                else:
+                    ndims_overlay_y = 1
+            else:
+                raise RuntimeError
+        try:
+            ndims_overlay_x = np.size(overlay_x.shape)
+        except AttributeError:
+            ## handle case if overlay_x is a list.  assume it is a 2-d list
+            if isinstance(overlay_x, list):
+                if type(overlay_x[0]) == list:
+                    ndims_overlay_x = 2
+                else:
+                    ndims_overlay_x = 1
+            else:
+                raise RuntimeError
+        if ndims_overlay_y == 1:
+            resources = Ngl.Resources()
+            if overlay_dots:
+                # resources.gsMarkLineMode = 'Markers'
+                # resources.gsMarker = 1
+                resources.gsMarkerIndex = 1
+                resources.gsMarkerSizeF = dotsize * 1.5
+                # resources.gsMarkerThicknessF = overlay_linethickness
+                if overlay_color != None:
+                    resources.gsMarkerColor = overlay_color
+            else:
+                resources.gsLineThicknessF = overlay_linethickness
+            if overlay_color != None:
+                resources.gsLineColor = overlay_color
+            if overlay_dashpattern != None:
+                resources.gsLineDashPattern = overlay_dashpattern
+            ### need to manually handle masked values since add_polyline doesn't seem to do that
+            if isinstance(overlay_y, np.ndarray) and isinstance(overlay_x, np.ndarray):
+                polyline_x, polyline_y = handle_masks(overlay_x, overlay_y)
+            elif isinstance(overlay_y, list) and isinstance(overlay_x, list):
+                maskedarray_overlayx = Nonemask(overlay_x)
+                maskedarray_overlayy = Nonemask(overlay_y)
+                polyline_x, polyline_y = handle_masks(maskedarray_overlayx, maskedarray_overlayy)
+            else:
+                raise RuntimeError
+            if overlay_dots:
+                pline = Ngl.add_polymarker(wks, plot, polyline_x, polyline_y, resources)
+            else:
+                pline = Ngl.add_polyline(wks, plot, polyline_x, polyline_y, resources)
+        elif ndims_overlay_y == 2 and ndims_overlay_x == 1:
+            shape_overlay_y = overlay_y.shape
+            #          pline = np.zeros(shape_overlay_x[0])
+            for i in range(shape_overlay_y[0]):
+                resources = Ngl.Resources()
+                if overlay_dots:
+                    # resources.gsMarkLineMode = 'Markers'
+                    # resources.gsMarker = 1
+                    resources.gsMarkerIndex = 1
+                    resources.gsMarkerSizeF = dotsize * 1.5
+                else:
+                    resources.gsLineThicknessF = overlay_linethickness
+                if overlay_color != None:
+                    if type(overlay_color) == int or type(overlay_color) == type('a string'):
+                        if overlay_color >= 0 or type(overlay_color) == type('a string'):
+                            if overlay_dots:
+                                resources.gsMarkerColor = overlay_color
+                            else:
+                                resources.gsLineColor = overlay_color
+                    else:
+                        if overlay_color[i] >= 0:
+                            resources.gsLineColor = overlay_color[i]
+                if overlay_dashpattern != None:
+                    resources.gsLineDashPattern = overlay_dashpattern[i]
+                ### need to manually handle masked values since add_polyline doesn't seem to do that
+                polyline_x, polyline_y = handle_masks(overlay_x, overlay_y[i,:])
+                if overlay_dots:
+                    pline = Ngl.add_polymarker(wks, plot, polyline_x, polyline_y, resources)
+                else:
+                    pline = Ngl.add_polyline(wks, plot, polyline_x, polyline_y, resources)
+        elif ndims_overlay_y == 2 and ndims_overlay_x == 2:
+            # assume each point has its own coordinate
+            if isinstance(overlay_y, np.ndarray) and isinstance(overlay_x, np.ndarray):
+                shape_overlay_y = overlay_y.shape
+                shape_overlay_x = overlay_x.shape
+                if shape_overlay_y != shape_overlay_x:
+                    raise RuntimeError
+                nlines = shape_overlay_y[0]
+                overlaydata_list = False
+            elif isinstance(overlay_y, list) and isinstance(overlay_x, list):
+                if len(overlay_y) != len(overlay_x):
+                    raise RuntimeError
+                nlines = len(overlay_y)
+                overlaydata_list = True
+            else:
+                raise RuntimeError
+            #
+            for i in range(nlines):
+                resources = Ngl.Resources()
+                if overlay_dots:
+                    # resources.gsMarkLineMode = 'Markers'
+                    # resources.gsMarker = 1
+                    resources.gsMarkerIndex = 1
+                    resources.gsMarkerSizeF = dotsize * 1.5
+                else:
+                    resources.gsLineThicknessF = overlay_linethickness
+                if overlay_color != None:
+                    if type(overlay_color) == int or type(overlay_color) == type("string"):
+                        if overlay_color >= 0:
+                            resources.gsLineColor = overlay_color
+                    else:
+                        if overlay_color[i] >= 0:
+                            resources.gsLineColor = overlay_color[i]
+                if overlay_dashpattern != None:
+                    resources.gsLineDashPattern = overlay_dashpattern[i]
+                ### need to manually handle masked values since add_polyline doesn't seem to do that
+                if not overlaydata_list:
+                    polyline_x, polyline_y = handle_masks(overlay_x[i,:], overlay_y[i,:])
+                else:
+                    maskedarray_overlayx = Nonemask(overlay_x[i])
+                    maskedarray_overlayy = Nonemask(overlay_y[i])
+                    polyline_x, polyline_y = handle_masks(maskedarray_overlayx, maskedarray_overlayy)
+                if overlay_dots:
+                    pline = Ngl.add_polymarker(wks, plot, polyline_x, polyline_y, resources)
+                else:
+                    pline = Ngl.add_polyline(wks, plot, polyline_x, polyline_y, resources)
+
+        else:
+            raise NotImplementedError
+        
         
     Ngl.draw(plot)
 
@@ -2345,7 +2615,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=True, levels=None, file=N
 
 ################################################################################
     
-def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, marker_colors=None, colormap="wh-bl-gr-ye-re", levels=None, nlevels=None, markershape="circle_filled", markersize=0.03, markerthickness=1.0, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False):
+def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, marker_colors=None, colormap="wh-bl-gr-ye-re", levels=None, nlevels=None, markershape="circle_filled", markersize=0.03, markerthickness=1.0, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_fontsize=0.025):
 
     if file == None:
         plot_type = "x11"
@@ -2477,7 +2747,27 @@ def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalE
                     pmarker = Ngl.add_polymarker(wks, plot, lon[i], lat[i], resources)
                 
 
-
+    if inset_title != None:
+        if type(inset_title) == type(""):
+            inset_title_res = Ngl.Resources()
+            inset_title_res.txFontHeightF  = inset_title_fontsize
+            inset_title_res.txJust  = "CenterLeft"
+            txt = Ngl.add_text(wks,plot,inset_title,inset_title_x, inset_title_y,inset_title_res)
+        elif type(inset_title) == type([]):
+            for inset_title_i in range(len(inset_title)):
+                inset_title_res = Ngl.Resources()
+                inset_title_res.txFontHeightF  = inset_title_fontsize
+                if inset_title_colors != None:
+                    inset_title_res.txFontColor = inset_title_colors[inset_title_i]
+                if inset_title_y_list == None:
+                    inset_title_y_element = inset_title_y + inset_title_yspace*inset_title_i
+                else:
+                    inset_title_y_element = inset_title_y_list[inset_title_i]
+                if inset_title_x_list == None:
+                    inset_title_x_element = inset_title_x
+                else:
+                    inset_title_x_element = inset_title_x_list[inset_title_i]
+                txt = Ngl.add_text(wks,plot,inset_title[inset_title_i],inset_title_x_element, inset_title_y_element, inset_title_res)            
 
 
     Ngl.draw(plot) 
@@ -2733,4 +3023,134 @@ def make_logical_checkerboard(IM,JM):
 #     xyplot(x, y, xrange=[-2,2], yrange=[-2,2])
 #     x, y = make_arrow(0., 0., 0., -1.,length, width)
 #     xyplot(x, y, xrange=[-2,2], yrange=[-2,2])
+
+
+def handle_masks(x, y, z=None):
+    """take two possibly masked arrays of same shape and return a new, flattened pair of arrays
+    that contains only the elements that are unmasked in both of the originals"""
+
+    if z==None:
+        
+        if x.shape != y.shape:
+            raise Exception
+
+        if x.shape == ():
+            return x, y
+
+        if not isinstance(x, np.ndarray):
+            raise Exception
+
+        if not isinstance(y, np.ndarray):
+            raise Exception
+
+        if isinstance(x, np.ma.masked_array) and not isinstance(y, np.ma.masked_array):  ## x masked only
+            x_out = x.data[np.logical_not(x.mask)]
+            y_out = y[np.logical_not(x.mask)]
+        elif not isinstance(x, np.ma.masked_array) and isinstance(y, np.ma.masked_array):  ## y masked only
+            x_out = x[np.logical_not(y.mask)]
+            y_out = y.data[np.logical_not(y.mask)]
+        elif isinstance(x, np.ma.masked_array) and isinstance(y, np.ma.masked_array):  ## x and y both masked
+            x_out = x.data[np.logical_not(y.mask + x.mask)]
+            y_out = y.data[np.logical_not(y.mask + x.mask)]
+        else:
+            x_out = x
+            y_out = y
+
+        return x_out, y_out
+
+    else:
+        
+        if x.shape != y.shape:
+            raise Exception
+
+        if x.shape != z.shape:
+            raise Exception
+
+        if x.shape == ():
+            return x, y, z
+        
+        if not isinstance(x, np.ndarray):
+            raise Exception
+
+        if not isinstance(y, np.ndarray):
+            raise Exception
+
+        if not isinstance(z, np.ndarray):
+            raise Exception
+
+        if isinstance(x, np.ma.masked_array) and not isinstance(y, np.ma.masked_array) and not isinstance(z, np.ma.masked_array):  ## x masked only
+            x_out = x.data[np.logical_not(x.mask)]
+            y_out = y[np.logical_not(x.mask)]
+            z_out = z[np.logical_not(x.mask)]
+        elif not isinstance(x, np.ma.masked_array) and isinstance(y, np.ma.masked_array) and not isinstance(z, np.ma.masked_array):  ## y masked only
+            x_out = x[np.logical_not(y.mask)]
+            y_out = y.data[np.logical_not(y.mask)]
+            z_out = z[np.logical_not(y.mask)]
+        elif not isinstance(x, np.ma.masked_array) and not isinstance(y, np.ma.masked_array) and isinstance(z, np.ma.masked_array):  ## z masked only
+            x_out = x[np.logical_not(z.mask)]
+            y_out = y[np.logical_not(z.mask)]
+            z_out = z.data[np.logical_not(z.mask)]
+        elif isinstance(x, np.ma.masked_array) and isinstance(y, np.ma.masked_array) and not isinstance(z, np.ma.masked_array):  ## x and y both masked
+            x_out = x.data[np.logical_not(y.mask + x.mask)]
+            y_out = y.data[np.logical_not(y.mask + x.mask)]
+            z_out = z[np.logical_not(y.mask + x.mask)]
+        elif isinstance(x, np.ma.masked_array) and not isinstance(y, np.ma.masked_array) and isinstance(z, np.ma.masked_array):  ## x and z both masked
+            x_out = x.data[np.logical_not(x.mask + z.mask)]
+            y_out = y[np.logical_not(x.mask + z.mask)]
+            z_out = z.data[np.logical_not(x.mask + z.mask)]
+        elif not isinstance(x, np.ma.masked_array) and isinstance(y, np.ma.masked_array) and isinstance(z, np.ma.masked_array):  ## y and z both masked
+            x_out = x[np.logical_not(y.mask + z.mask)]
+            y_out = y.data[np.logical_not(y.mask + z.mask)]
+            z_out = z.data[np.logical_not(y.mask + z.mask)]
+        elif isinstance(x, np.ma.masked_array) and isinstance(y, np.ma.masked_array) and isinstance(z, np.ma.masked_array):  ## x, y and z both masked
+            x_out = x.data[np.logical_not(y.mask + x.mask + z.mask)]
+            y_out = y.data[np.logical_not(y.mask + x.mask + z.mask)]
+            z_out = z.data[np.logical_not(y.mask + x.mask + z.mask)]
+        else:
+            x_out = x
+            y_out = y
+            z_out = z
+
+        return x_out, y_out
+
+
+
+def Nonemask(x):    
+    """input list x, and output amsked array, with all values of None in list replaced by masked values"""
+    a = np.ma.masked_array(x, dtype=np.float)
+    aa = np.ma.masked_invalid(a)
+    return aa
+
+
+
+def make_ellipse(x=0.0, y=0.0, a=0.0, b=0.0, angle=0.0, k=1./12):
+    """ Draws an ellipse using (360*k + 1) discrete points; based on pseudo code
+    given at http://en.wikipedia.org/wiki/Ellipse
+    k = 1 means 361 points (degree by degree)
+    a = major axis distance,
+    b = minor axis distance,
+    x = offset along the x-axis
+    y = offset along the y-axis
+    angle = clockwise rotation [in degrees] of the ellipse;
+        * angle=0  : the ellipse is aligned with the positive x-axis
+        * angle=30 : rotated 30 degrees clockwise from positive x-axis
+    """
+    pts_x = np.zeros((360*k+1))
+    pts_y = np.zeros((360*k+1))    
+
+    if angle == None:
+        angle = 0.
+    
+    beta = -angle * np.pi/180.0
+    sin_beta = np.sin(beta)
+    cos_beta = np.cos(beta)
+    alpha = np.radians(np.r_[0.:360.:1j*(360*k+1)])
+ 
+    sin_alpha = np.sin(alpha)
+    cos_alpha = np.cos(alpha)
+    
+    pts_x[:] = x + (a * cos_alpha * cos_beta - b * sin_alpha * sin_beta)
+    pts_y[:] = y + (a * cos_alpha * sin_beta + b * sin_alpha * cos_beta)
+
+    return pts_x, pts_y
 
