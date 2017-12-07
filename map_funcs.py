@@ -473,7 +473,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
     else:
         mp_resources.lbLabelBarOn = False
 
-    if levels == None:
+    if type(levels) == type(None):
         mp_resources.cnMaxLevelCount      = 15
     else:
         mp_resources.cnLevelSelectionMode      = 'ExplicitLevels'
@@ -2380,7 +2380,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     if ytitle != None:
         resources.tiYAxisString           = ytitle  # Y axis label.
 
-    if levels == None:
+    if type(levels) == type(None):
         resources.cnMaxLevelCount      = 15
     else:
         resources.cnLevelSelectionMode      = 'ExplicitLevels'
@@ -2710,7 +2710,7 @@ def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalE
         resources.sfXArray = dummylons
         resources.sfYArray = dummylats
         resources.cnNoDataLabelOn = False
-        if levels == None:
+        if type(levels) == type(None):
             if nlevels == None:
                 nlevels=15
             levels = np.arange(nlevels) * (data.max()-data.min()) / (nlevels-1.) + data.min()
