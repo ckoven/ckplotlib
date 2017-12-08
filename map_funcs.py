@@ -969,7 +969,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         else:
             label_yspace =  (max(yrange)-min(yrange)) * 0.05
     if label_xspace == None:
-        label_xspace = 0.
+        if not xlog:
+            label_xspace = 0.
+        else:
+            label_xspace = 1.
 
     if regress:
         if x.shape == y.shape:
