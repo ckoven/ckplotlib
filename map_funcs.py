@@ -228,6 +228,12 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             lonlimits=[-123.5,-104.]
             latlimits=[31., 49.]
             projection="CylindricalEquiDistant"
+        elif specialprojection=="westus_ext":
+            loncenter=-115.5
+            latcenter=40.
+            lonlimits=[-127.0,-104.]
+            latlimits=[31., 49.]
+            projection="CylindricalEquiDistant"
         elif specialprojection=="samer_satellite":
             latlimits=[-60.,15.]
             lonlimits=[-90,-30]
@@ -300,7 +306,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
         resources.mpOutlineBoundarySets = "National"
         resources.mpGridAndLimbOn =  False
         resources.mpNationalLineThicknessF = 1.5
-    if specialprojection=="conus_states" or specialprojection=="conus_states_rect" or specialprojection=="namer_states" or specialprojection=="calif" or specialprojection=="conus_states1":
+    if specialprojection=="conus_states" or specialprojection=="conus_states_rect" or specialprojection=="namer_states" or specialprojection=="calif" or specialprojection=="conus_states1" or specialprojection=="westus_ext" or specialprojection=="westus":
         resources.mpOutlineBoundarySets = "AllBoundaries"
         resources.mpGridAndLimbOn =  False
         resources.mpNationalLineThicknessF = 1.5
@@ -360,7 +366,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False):
 
 
     if len(lat.shape) == 1 and len(lon.shape) == 1:
@@ -473,7 +479,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
     else:
         mp_resources.lbLabelBarOn = False
 
-    if levels == None:
+    if type(levels) == type(None):
         mp_resources.cnMaxLevelCount      = 15
     else:
         mp_resources.cnLevelSelectionMode      = 'ExplicitLevels'
@@ -643,7 +649,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
                 else:
                     inset_title_y_element = inset_title_y_list[inset_title_i]
                 if inset_title_x_list == None:
-                    inset_title_x_element = inset_title_x
+                    inset_title_x_element = inset_title_x + inset_title_xspace*inset_title_i
                 else:
                     inset_title_x_element = inset_title_x_list[inset_title_i]
                 txt = Ngl.add_text(wks,plot,inset_title[inset_title_i],inset_title_x_element, inset_title_y_element, inset_title_res)            
@@ -712,7 +718,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, shuffle_shaded_dots=False):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False):
 
     if file == None:
         plot_type = "x11"
@@ -822,6 +828,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         resources.tmYLOn          = False
         resources.tmYROn          = False
 
+    if noxticks:
+        resources.tmXBLabelsOn    = False
+        resources.tmXTOn          = False
+        resources.tmXBOn          = False
+
     if norightticks or overlay_altyaxis != None:
         resources.tmYROn          = False
 
@@ -884,7 +895,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
 
 
-    if type(shaded_dot_data) == type(None):
+    if type(shaded_dot_data) == type(None) and type(shaded_line_data) == type(None):
         if not (box_whisker_plot or stack_shade_values):
             plot = Ngl.xy(wks, x, y, resources)
             if xrange == None:
@@ -929,8 +940,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         lb_res.lbTopMarginF           = 0.
         lb_res.lbBottomMarginF        = 0.5
         lb_res.lbLabelFontHeightF     = 0.02
-        #        
-        nlevels = len(shaded_dot_levels)
+        #
+        if type(shaded_dot_data) != type(None):
+            nlevels = len(shaded_dot_levels)
+        else:
+            nlevels = len(shaded_line_levels)            
         cmap = Ngl.retrieve_colormap(wks)
         nbars = nlevels+1
         colorbars = np.arange(nbars) / (nbars-1.) * (cmap.shape[0]-3)
@@ -938,8 +952,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         colorbar_x = xrange[0] + (xrange[1]-xrange[0]) * 0.1
         colorbar_y = yrange[0]
         level_label_string_list = []
-        for i in range(len(shaded_dot_levels)):
-            level_label_string_list.append(str(shaded_dot_levels[i]))
+        for i in range(nlevels):
+            if type(shaded_dot_data) != type(None):
+                level_label_string_list.append(str(shaded_dot_levels[i]))
+            else:
+                level_label_string_list.append(str(shaded_line_levels[i]))                
         # pid = Ngl.labelbar_ndc(wks, nbars, level_label_string_list, colorbar_x, colorbar_y, lb_res)
 
     if label_xstart == None:
@@ -952,7 +969,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         else:
             label_yspace =  (max(yrange)-min(yrange)) * 0.05
     if label_xspace == None:
-        label_xspace = 0.
+        if not xlog:
+            label_xspace = 0.
+        else:
+            label_xspace = 1.
 
     if regress:
         if x.shape == y.shape:
@@ -1291,7 +1311,15 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             elif colors != None:
                 if colors[i] >= 0:
                     resources.txFontColor = colors[i]
-            pstring.extend([Ngl.add_text(wks,plot,labels[i],label_xstart+labelorder[i]*label_xspace,label_ystart-labelorder[i]*label_yspace,resources)])
+            if not xlog:
+                xpos = label_xstart+labelorder[i]*label_xspace
+            else:
+                xpos = label_xstart*label_xspace**labelorder[i]
+            if not ylog:
+                ypos = label_ystart-labelorder[i]*label_yspace
+            else:
+                ypos = label_ystart/(label_yspace**labelorder[i])
+            pstring.extend([Ngl.add_text(wks,plot,labels[i],xpos,ypos,resources)])
 
     if not overlay_labels==None:
         ### expects labels to be a list of strings
@@ -1704,6 +1732,32 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 resources.gsMarkerColor = colorbars_int[marker_colorlevel[ii]]
                 pmarker = Ngl.add_polymarker(wks, plot, x_flat[ii], y_flat[ii], resources)
 
+    if type(shaded_line_data) != type(None):
+        ## convert each data value into the index of the corresponding color bar.
+        ## the way to do this is add up the number of levels that each index is greater than
+        marker_colorlevel = np.zeros(shaded_line_data.shape, dtype=np.int32)
+        ## assume x and y data arrive with the number of lines as the first dimension and the vertices of the line as the second dimension
+        ## enforce for now that x and y have the same shape
+        if x.shape != y.shape:
+            raise RuntimeError
+        if len(x[:,0]) != len(shaded_line_data):
+            raise RuntimeError
+        ## no masks for now...
+        if shuffle_shaded_lines:
+            lineorder_shuffled = np.argsort(np.random.random(len(shaded_line_data)))
+        for i in range(len(shaded_line_data)):
+            if shuffle_shaded_lines:
+                ii = dotorder_shuffled[i]
+            else:
+                ii = i   
+            for j in range(len(shaded_line_levels)):
+                if shaded_line_data[ii] > shaded_line_levels[j]:
+                    marker_colorlevel[ii] = marker_colorlevel[ii]+1
+            resources = Ngl.Resources()
+            resources.gsLineColor = colorbars_int[marker_colorlevel[ii]]
+            resources.gsLineThicknessF = linethickness
+            pmarker = Ngl.add_polyline(wks, plot, x[ii,:], y[ii,:], resources)
+
 
     if (overlay_vectors_x != None) and (overlay_vectors_y != None):
         # draw arrows on plot.  assume x and y arguments are nx2 arrays, with the first column being the arrow start and the second column being the arrow end
@@ -1747,13 +1801,16 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             if overlay_ellipse_thickness != None:
                 ellipse_res.gsLineThicknessF=overlay_ellipse_thickness
             # try:
-            ellipse_x, ellipse_y = make_ellipse(overlay_ellipses_x[i], overlay_ellipses_y[i], overlay_ellipses_xaxis[i], overlay_ellipses_yaxis[i], angle=overlay_ellipses_angle[i])
+            ellipse_x, ellipse_y = make_ellipse(overlay_ellipses_x[i], overlay_ellipses_y[i], overlay_ellipses_xaxis[i], overlay_ellipses_yaxis[i], angle=overlay_ellipses_angle[i], k=1)
             if not overlay_ellipses_filled:
                 pline = Ngl.polyline(wks,plot,ellipse_x,ellipse_y, ellipse_res)
             else:
                 if overlay_ellipses_opacity != None:
                     ellipse_res.gsFillOpacityF = overlay_ellipses_opacity
-                    ellipse_res.gsFillColor = "White"
+                    if overlay_ellipses_color == None:
+                        ellipse_res.gsFillColor = "White"
+                    else:
+                        ellipse_res.gsFillColor = overlay_ellipses_color[i]
                     # ellipse_res_2 = Ngl.Resources()
                     # ellipse_res_2.gsFillOpacityF = .4
                     # ellipse_res_2.gsFillColor = "white"                
@@ -2310,7 +2367,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     resources.cnLinesOn         = contour
     
     if pixels:
-        resources.cnFillMode        = "CellFill"
+        resources.cnFillMode        = "RasterFill"
         resources.cnLinesOn         = contour
         resources.cnLineLabelsOn    = False
         resources.cnRasterSmoothingOn = contour_fill
@@ -2380,7 +2437,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     if ytitle != None:
         resources.tiYAxisString           = ytitle  # Y axis label.
 
-    if levels == None:
+    if type(levels) == type(None):
         resources.cnMaxLevelCount      = 15
     else:
         resources.cnLevelSelectionMode      = 'ExplicitLevels'
@@ -2710,7 +2767,7 @@ def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalE
         resources.sfXArray = dummylons
         resources.sfYArray = dummylats
         resources.cnNoDataLabelOn = False
-        if levels == None:
+        if type(levels) == type(None):
             if nlevels == None:
                 nlevels=15
             levels = np.arange(nlevels) * (data.max()-data.min()) / (nlevels-1.) + data.min()
@@ -2785,7 +2842,7 @@ def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalE
 
 
 ################################################################################
-def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, colormap=None, vectorthickness=None, arrowheadlength=1.5, arrowheadwidth=1.5, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, greatcircle=True, arrowsforwards=True, vector_colors=None, vector_color_levels=None, vector_color_nlevels=None):
+def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, colormap=None, vectorthickness=None, arrowheadlength=1.5, arrowheadwidth=1.5, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, greatcircle=True, arrowsforwards=True, vector_colors=None, vector_color_levels=None, vector_color_nlevels=None, overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None):
         
     if file == None:
         plot_type = "x11"
@@ -2873,6 +2930,49 @@ def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="Cy
         marker_colorlevel = np.zeros(vector_colors.shape, dtype=np.int32)
     else:
         plot = Ngl.map(wks,resources)
+
+
+    ## overlay_contours
+    if overlay_contour_data != None:
+
+        # 
+        # Copy just the contour resources from mpres to a new resource list (cnres).
+        #
+        cnres = Ngl.Resources()
+        for t in dir(resources):
+          if (t[0:2] == 'cn' or t[0:2] == 'sf' or t[0:3] == 'ngl'):
+              setattr(cnres,t,getattr(resources,t))
+        #
+        cnres.cnLineLabelsOn    = False
+        #
+        if overlay_contour_lon != None:
+            cnres.sfXArray        = overlay_contour_lon[:]
+        else:
+            cnres.sfXArray        = lon[:]                
+        if overlay_contour_lon != None:
+            cnres.sfYArray        = overlay_contour_lat[:]
+        else:
+            cnres.sfYArray        = lat[:]        
+        #
+        cnres.cnFillOn          = False
+        cnres.cnLinesOn         = True
+        cnres.nglDraw = False
+        cnres.nglFrame = False
+        cnres.lbLabelBarOn = False
+        cnres.lbLabelsOn = False
+        cnres.cnInfoLabelOn = False
+        if overlay_contour_levels != None:
+            cnres.cnLevelSelectionMode      = 'ExplicitLevels'
+            cnres.cnLevels = overlay_contour_levels
+        cnres.cnLineThicknessF  = 0.2
+        if overlay_contour_colors != None:
+            cnres.cnLineColors = overlay_contour_colors
+        if overlay_contour_thickness != None:
+            cnres.cnLineThicknessF  = overlay_contour_thickness
+        #
+        contour_overlay = Ngl.contour(wks, overlay_contour_data, cnres)
+        Ngl.overlay(plot,contour_overlay)
+        Ngl.draw(plot)
 
     IM = len(lon)
     JM = len(lat)
