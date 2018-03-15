@@ -1737,7 +1737,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             except:
                 print('had to skip an arrow: ', overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1])
 
-    if (overlay_ellipses_x != None) and (overlay_ellipses_y != None):
+    if (type(overlay_ellipses_x) != type(None)) and (type(overlay_ellipses_y) != type(None)):
         # draw ellipses on plot.  
         if overlay_ellipses_x.shape != overlay_ellipses_y.shape:
             raise RuntimeError
