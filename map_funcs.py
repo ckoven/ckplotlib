@@ -366,7 +366,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None):
 
 
     if len(lat.shape) == 1 and len(lon.shape) == 1:
@@ -708,6 +708,16 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
             Ngl.add_text(wks,plot,station_names[i],station_lons[i]+1.,station_lats[i],resources)
         Ngl.draw(plot)
 
+
+    if type(overlay_polyline_x) != type(None):
+        resources = Ngl.Resources()
+        if type(overlay_polyline_color) != type(None):
+            resources.gsLineColor = overlay_polyline_color
+        if type(overlay_polyline_thickness) != type(None):
+            resources.gsLineThicknessF = overlay_polyline_thickness
+        if type(overlay_polyline_dashpattern) != type(None):
+            resources.gsLineDashPattern = overlay_polyline_dashpattern
+        overlay_polyline = Ngl.polyline(wks, plot, overlay_polyline_x, overlay_polyline_y, resources)
               
     if not file==None:
         Ngl.delete_wks(wks)
@@ -1945,10 +1955,11 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
         dx = bin_edges[1:nhist+1]-bin_edges[0:nhist]
         bin_centers = bin_edges[0:nhist]+dx/2.
 
-        if not np.var(dx)/np.mean(dx) < .00001:
-            raise RuntimeError('problem with assumption of uniform bin spacing')
-        else:
-            dxmean = dx[0]
+        if histstyle == "boxes":
+            if not np.var(dx)/np.mean(dx) < .00001:
+                raise RuntimeError('problem with assumption of uniform bin spacing')
+            else:
+                dxmean = dx[0]
 
         if FirstIteration:
             wks_res = Ngl.Resources()
