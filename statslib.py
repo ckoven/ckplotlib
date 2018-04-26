@@ -314,3 +314,16 @@ def ensemble_ave(data_list, time_axis=0):
         data_out = temp_array.mean(axis=0)
         
     return data_out
+
+
+def error_ellipse(x,y, returnmeans=False):
+    cov = np.cov(x[:], y[:])
+    lambda_, v = np.linalg.eig(cov)
+    lambda_ = np.sqrt(lambda_)
+    error_ellipse_xaxis = lambda_[0]
+    error_ellipse_yaxis = lambda_[1]
+    error_ellipse_angle = 90. + np.degrees(np.arctan2(*v[:,0][:]))
+    if returnmeans:
+        return error_ellipse_xaxis, error_ellipse_yaxis, error_ellipse_angle, x.mean(), y.mean()
+    else:
+        return error_ellipse_xaxis, error_ellipse_yaxis, error_ellipse_angle
