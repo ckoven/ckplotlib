@@ -222,6 +222,12 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             lonlimits=[-125.,-112.5]
             latlimits=[31., 43.]
             projection="CylindricalEquiDistant"
+        elif specialprojection=="calif2":
+            loncenter=-121.
+            latcenter=37.
+            lonlimits=[-125.,-117]
+            latlimits=[31., 43.]
+            projection="CylindricalEquiDistant"
         elif specialprojection=="westus":
             loncenter=-114.25
             latcenter=40.
@@ -306,7 +312,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
         resources.mpOutlineBoundarySets = "National"
         resources.mpGridAndLimbOn =  False
         resources.mpNationalLineThicknessF = 1.5
-    if specialprojection=="conus_states" or specialprojection=="conus_states_rect" or specialprojection=="namer_states" or specialprojection=="calif" or specialprojection=="conus_states1" or specialprojection=="westus_ext" or specialprojection=="westus":
+    if specialprojection=="conus_states" or specialprojection=="conus_states_rect" or specialprojection=="namer_states" or specialprojection=="calif" or specialprojection=="calif2" or specialprojection=="conus_states1" or specialprojection=="westus_ext" or specialprojection=="westus":
         resources.mpOutlineBoundarySets = "AllBoundaries"
         resources.mpGridAndLimbOn =  False
         resources.mpNationalLineThicknessF = 1.5
