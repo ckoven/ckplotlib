@@ -235,6 +235,12 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             lonlimits=[-125.,-112.5]
             latlimits=[31., 43.]
             projection="CylindricalEquiDistant"
+        elif specialprojection=="calif2":
+            loncenter=-121.
+            latcenter=37.
+            lonlimits=[-125.,-117]
+            latlimits=[31., 43.]
+            projection="CylindricalEquiDistant"
         elif specialprojection=="westus":
             loncenter=-114.25
             latcenter=40.
@@ -319,7 +325,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
         resources.mpOutlineBoundarySets = "National"
         resources.mpGridAndLimbOn =  False
         resources.mpNationalLineThicknessF = 1.5
-    if specialprojection=="conus_states" or specialprojection=="conus_states_rect" or specialprojection=="namer_states" or specialprojection=="calif" or specialprojection=="conus_states1" or specialprojection=="westus_ext" or specialprojection=="westus":
+    if specialprojection=="conus_states" or specialprojection=="conus_states_rect" or specialprojection=="namer_states" or specialprojection=="calif" or specialprojection=="calif2" or specialprojection=="conus_states1" or specialprojection=="westus_ext" or specialprojection=="westus":
         resources.mpOutlineBoundarySets = "AllBoundaries"
         resources.mpGridAndLimbOn =  False
         resources.mpNationalLineThicknessF = 1.5
@@ -379,7 +385,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None):
 
 
     if len(lat.shape) == 1 and len(lon.shape) == 1:
@@ -718,6 +724,16 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
             Ngl.add_text(wks,plot,station_names[i],station_lons[i]+1.,station_lats[i],resources)
         Ngl.draw(plot)
 
+
+    if type(overlay_polyline_x) != type(None):
+        resources = Ngl.Resources()
+        if type(overlay_polyline_color) != type(None):
+            resources.gsLineColor = overlay_polyline_color
+        if type(overlay_polyline_thickness) != type(None):
+            resources.gsLineThicknessF = overlay_polyline_thickness
+        if type(overlay_polyline_dashpattern) != type(None):
+            resources.gsLineDashPattern = overlay_polyline_dashpattern
+        overlay_polyline = Ngl.polyline(wks, plot, overlay_polyline_x, overlay_polyline_y, resources)
               
     if not file==None:
         Ngl.delete_wks(wks)
@@ -728,7 +744,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False):
 
     plot_type = get_workstation_type(file)
 
@@ -1424,9 +1440,9 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         else:
             raise NotImplementedError
 
-    if shadederror_thickness != None or (shadederror_ulimit != None and shadederror_llimit != None):
+    if type(shadederror_thickness) != type(None) or (type(shadederror_ulimit) != type(None) and type(shadederror_llimit) != type(None)):
         ### this is for surrounding each line with a shaded error area
-        if shadederror_thickness != None:
+        if type(shadederror_thickness) != type(None):
             if shadederror_thickness.shape != y.shape:
                 raise RuntimeError
             symmetric = True
@@ -1451,6 +1467,8 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             if shadederror_fillpattern != None:
                 polyres.gsFillIndex = shadederror_fillpattern[i]
                 polyres.gsEdgesOn = True
+            if shadederror_opacity != None:
+                polyres.gsFillOpacityF = shadederror_opacity
             if symmetric:
                 if len(y.shape) == 1:
                     shape_y = np.concatenate((y[:]+shadederror_thickness[:],y[::-1]-shadederror_thickness[::-1]))
@@ -1955,10 +1973,11 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
         dx = bin_edges[1:nhist+1]-bin_edges[0:nhist]
         bin_centers = bin_edges[0:nhist]+dx/2.
 
-        if not np.var(dx)/np.mean(dx) < .00001:
-            raise RuntimeError('problem with assumption of uniform bin spacing')
-        else:
-            dxmean = dx[0]
+        if histstyle == "boxes":
+            if not np.var(dx)/np.mean(dx) < .00001:
+                raise RuntimeError('problem with assumption of uniform bin spacing')
+            else:
+                dxmean = dx[0]
 
         if FirstIteration:
             wks_res = Ngl.Resources()
