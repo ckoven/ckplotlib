@@ -3,18 +3,12 @@ import Ngl
 import math
 import sys
 from copy import deepcopy
+import os.path
 
+
+print(Ngl.__version__)
 
 ## these are a set of plotting functions using the PyNGL library, developed by C. Koven for own use.
-
-if Ngl.__version__ == "1.3.1":
-    graphicfiletype = "newpdf"
-elif Ngl.__version__ == "1.4.0":
-    graphicfiletype = "newpdf"    
-elif Ngl.__version__ == "1.5.0" or Ngl.__version__ == "1.5.0-beta":
-    graphicfiletype = "pdf"    
-else:
-    graphicfiletype = "ps"
 
 x11_window_list = []  ### this is a running tally of what x11 workstations have been created by this module, for easy clearing of them
 
@@ -24,6 +18,25 @@ x11_window_list = []  ### this is a running tally of what x11 workstations have 
 # ### declare a global page width and height (default is square)
 page_width = 7.
 page_height = 7.
+
+def get_workstation_type(file):
+    if type(file) == type(None):
+        graphicfiletype = 'x11'
+    else:
+        fileName, fileExtension = os.path.splitext(file)
+        if fileExtension == ".png":
+            graphicfiletype = "png"
+        else:
+            if Ngl.__version__ == "1.3.1":
+                graphicfiletype = "newpdf"
+            elif Ngl.__version__ == "1.4.0":
+                graphicfiletype = "newpdf"    
+            elif Ngl.__version__ == "1.5.0" or Ngl.__version__ == "1.5.0-beta":
+                graphicfiletype = "pdf"    
+            else:
+                graphicfiletype = "pdf"
+    return graphicfiletype
+
 
 def clear_all_x11_windows():
     for i in range(len(x11_window_list)):
@@ -381,10 +394,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
     if data.shape != (JM,IM):
         raise SizeMismatchError
 
-    if file == None:
-        plot_type = "x11"
-    else:
-        plot_type = graphicfiletype
+    plot_type = get_workstation_type(file)
 
     if len(lon.shape) == 1:
         if np.abs(lon[0] - lon[IM-1]) > 350.:
@@ -685,7 +695,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
                     # x[1],y[1] = lon[i] + vector_delta_lon[j,i], lat[j] + vector_delta_lat[j,i]
                     x0, y0 = vector_lon[i],vector_lat[j]
                     x1, y1 = vector_lon[i] + vector_delta_lon[j,i], vector_lat[j] + vector_delta_lat[j,i]
-                    if vector_arrows_forwards:
+                    if vectoframer_arrows_forwards:
                         x, y = make_arrow(x0, y0, x1, y1, vector_arrowheadlength, vector_arrowheadwidth, greatcircle=vector_greatcircle)
                     else:
                         x, y = make_arrow(x1, y1, x0, y0, vector_arrowheadlength, vector_arrowheadwidth, greatcircle=vector_greatcircle)                       
@@ -720,10 +730,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False):
 
-    if file == None:
-        plot_type = "x11"
-    else:
-        plot_type = graphicfiletype
+    plot_type = get_workstation_type(file)
 
     if  Nonemask:
         if isinstance(x, list):
@@ -741,8 +748,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         masked_input = False
 
     wks_res = Ngl.Resources()
-    if file == None:
+    if plot_type == 'x11':
         wks_res.wkPause = False
+    elif plot_type == 'png':
+        wks_res.wkWidth = page_width * 100
+        wks_res.wkHeight = page_height * 100
     else:
         wks_res.wkPaperWidthF = page_width
         wks_res.wkPaperHeightF = page_height
@@ -758,8 +768,13 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         wks = Ngl.open_wks(plot_type,file,wks_res)
 
     resources = Ngl.Resources()
+
+    #cdkif plot_type != 'png':
     resources.nglDraw = False
+
+    #cdkif plot_type != 'png':
     resources.nglFrame = False
+
     if title != None:
         resources.tiMainString = title
 
@@ -977,8 +992,8 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
     if regress:
         if x.shape == y.shape:
             ## rc,attrs = Ngl.regline(x, y)
-            import linreg
-            b, r_sq = linreg.linreg(x,y)
+            import statslib
+            b, r_sq = statslib.linreg(x,y)
             if masked_input:
                 x0 = np.array([np.ma.min(x), np.ma.max(x)])
             else:
@@ -1007,13 +1022,13 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 print(r_sq)
         else:
             ## need to loop over repeating axis for a variety of regression lines
-            import linreg
+            import statslib
             # print(x.shape)
             # print(y.shape)
             ## assume vector x, array y
             for i in range(y.shape[0]):
                 try:
-                    b, r = linreg.linreg(x,y[i,:])
+                    b, r = statslib.linreg(x,y[i,:])
                 except:
                     print('skipped one')
                 if masked_input:
@@ -1823,7 +1838,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
                 
     Ngl.draw(plot)
-
+    Ngl.frame(wks)
     
     if not file==None:
         Ngl.delete_wks(wks)
@@ -1839,10 +1854,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
     ## takes as fundamental argument, data_in, either a single numpy array or a list of numpy arrays
 
-    if file == None:
-        plot_type = "x11"
-    else:
-        plot_type = graphicfiletype
+    plot_type = get_workstation_type(file)
 
     if type(data_in) == type(np.arange(0)) or type(data_in) == type(np.ma.arange(0)):
         data_in_ndarray=True
@@ -2345,11 +2357,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     # if data.shape != (JM,IM):
     #     raise SizeMismatchError
 
-    if file == None:
-        plot_type = "x11"
-    else:
-        plot_type = graphicfiletype
-
+    plot_type = get_workstation_type(file)
 
 
     wks_res = Ngl.Resources()
@@ -2680,10 +2688,7 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     
 def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, marker_colors=None, colormap="wh-bl-gr-ye-re", levels=None, nlevels=None, markershape="circle_filled", markersize=0.03, markerthickness=1.0, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_fontsize=0.025):
 
-    if file == None:
-        plot_type = "x11"
-    else:
-        plot_type = graphicfiletype
+    plot_type = get_workstation_type(file)
 
     wks_res = Ngl.Resources()
 
@@ -2844,10 +2849,7 @@ def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalE
 ################################################################################
 def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, colormap=None, vectorthickness=None, arrowheadlength=1.5, arrowheadwidth=1.5, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, greatcircle=True, arrowsforwards=True, vector_colors=None, vector_color_levels=None, vector_color_nlevels=None, overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None):
         
-    if file == None:
-        plot_type = "x11"
-    else:
-        plot_type = graphicfiletype
+    plot_type = get_workstation_type(file)
 
     wks_res = Ngl.Resources()
 
