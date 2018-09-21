@@ -4,7 +4,9 @@ import math
 import sys
 from copy import deepcopy
 import os.path
-
+import subprocess
+import inspect
+import os
 
 print(Ngl.__version__)
 
@@ -49,7 +51,21 @@ def clear_oldest_x11_window():
         Ngl.delete_wks(temp)
     except:
         print('trying to close the oldest x11 window but none are open!')
-    
+
+pngdens = 600
+
+def pdf_to_png(file, density=pngdens):
+    ### call some command-line tools to convert a pdf file to a png file.
+    ### first crop the pdf file usiing the perl script pdfcrop (which is in this directory)
+    os.system('pwd')
+    # print(a)
+    dirname = os.path.dirname(os.path.realpath(__file__))
+    command1string = dirname+'/pdfcrop '+file+'.pdf '+file+'_crop.pdf'
+    os.system(command1string)
+    command2string = 'convert -trim -density '+str(density)+' '+file+'_crop.pdf '+file+'.png'
+    os.system(command2string)
+    command3string = 'rm -f '+file+'_crop.pdf'
+    os.system(command3string)
 
 def parse_colormap(colormap):
     ### this is to allow the user to specify ether the standard list of PyNGL color tables, or alternately a set of predefined color tables, e.g. the colorbrewer maps, etc.
@@ -385,7 +401,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens):
 
 
     if len(lat.shape) == 1 and len(lon.shape) == 1:
@@ -737,6 +753,9 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
               
     if not file==None:
         Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
     else:
         x11_window_list.append(wks)
 
@@ -744,7 +763,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens):
 
     plot_type = get_workstation_type(file)
 
@@ -1860,6 +1879,9 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
     
     if not file==None:
         Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
     else:
         x11_window_list.append(wks)
 
@@ -1868,7 +1890,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
 ################################################################################
     
-def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03):  #scaled_cumulative_output=False
+def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, makepng=False, png_dens=pngdens):  #scaled_cumulative_output=False
 
     ## takes as fundamental argument, data_in, either a single numpy array or a list of numpy arrays
 
@@ -2355,6 +2377,10 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
     
     if not file==None:
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
+        #
         if return_histstats:
             Ngl.delete_wks(wks)
             return output_binedges, output_binfreq
@@ -2368,7 +2394,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
 
 ################
-def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None):
+def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None, makepng=False, png_dens=pngdens):
     IM = x.shape[0]
     JM = y.shape[0]
     data = np.squeeze(data[:])
@@ -2700,12 +2726,15 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
 
     if not file==None:
         Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
     else:
         x11_window_list.append(wks)
 
 ################################################################################
     
-def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, marker_colors=None, colormap="wh-bl-gr-ye-re", levels=None, nlevels=None, markershape="circle_filled", markersize=0.03, markerthickness=1.0, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_fontsize=0.025):
+def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, marker_colors=None, colormap="wh-bl-gr-ye-re", levels=None, nlevels=None, markershape="circle_filled", markersize=0.03, markerthickness=1.0, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_fontsize=0.025, makepng=False, png_dens=pngdens):
 
     plot_type = get_workstation_type(file)
 
@@ -2861,12 +2890,15 @@ def map_stationmarkers(lat, lon, data=None, polar=None, projection="CylindricalE
 
     if not file==None:
         Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
     else:
         x11_window_list.append(wks)
 
 
 ################################################################################
-def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, colormap=None, vectorthickness=None, arrowheadlength=1.5, arrowheadwidth=1.5, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, greatcircle=True, arrowsforwards=True, vector_colors=None, vector_color_levels=None, vector_color_nlevels=None, overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None):
+def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="CylindricalEquidistant", file=None, title=None, subtitle=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=True, colormap=None, vectorthickness=None, arrowheadlength=1.5, arrowheadwidth=1.5, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, greatcircle=True, arrowsforwards=True, vector_colors=None, vector_color_levels=None, vector_color_nlevels=None, overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, makepng=False, png_dens=pngdens):
         
     plot_type = get_workstation_type(file)
 
@@ -3025,6 +3057,9 @@ def map_changevectors(delta_lat, delta_lon, lat, lon, polar=None, projection="Cy
 
     if not file==None:
         Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
     else:
         x11_window_list.append(wks)
 
