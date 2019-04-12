@@ -763,44 +763,47 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None):
 
-    plot_type = get_workstation_type(file)
-
-    if  Nonemask:
-        if isinstance(x, list):
-            x = Nonemask(x)            
-        if isinstance(y, list):
-            y = Nonemask(y)
-        if isinstance(overlay_x, list):
-            overlay_x = Nonemask(overlay_x)
-        if isinstance(overlay_y, list):
-            overlay_y = Nonemask(overlay_y)
-
-    if isinstance(x, np.ma.masked_array) or isinstance(y, np.ma.masked_array):
-        masked_input = True
-    else:
-        masked_input = False
-
-    wks_res = Ngl.Resources()
-    if plot_type == 'x11':
-        wks_res.wkPause = False
-    elif plot_type == 'png':
-        wks_res.wkWidth = page_width * 100
-        wks_res.wkHeight = page_height * 100
-    else:
-        wks_res.wkPaperWidthF = page_width
-        wks_res.wkPaperHeightF = page_height
-        wks_res.wkOrientation = "portrait"
-
-    if not colormap == None:
-        colormap = parse_colormap(colormap)
-        wks_res.wkColorMap = colormap
-
-    wks = Ngl.open_wks(plot_type,file,wks_res)
-    if wks < 0 and plot_type == "x11":
-        clear_oldest_x11_window()
+    if not use_wks == None:
+        plot_type = get_workstation_type(file)
+        
+        if  Nonemask:
+            if isinstance(x, list):
+                x = Nonemask(x)            
+            if isinstance(y, list):
+                y = Nonemask(y)
+            if isinstance(overlay_x, list):
+                overlay_x = Nonemask(overlay_x)
+            if isinstance(overlay_y, list):
+                overlay_y = Nonemask(overlay_y)
+                
+        if isinstance(x, np.ma.masked_array) or isinstance(y, np.ma.masked_array):
+            masked_input = True
+        else:
+            masked_input = False
+            
+        wks_res = Ngl.Resources()
+        if plot_type == 'x11':
+            wks_res.wkPause = False
+        elif plot_type == 'png':
+            wks_res.wkWidth = page_width * 100
+            wks_res.wkHeight = page_height * 100
+        else:
+            wks_res.wkPaperWidthF = page_width
+            wks_res.wkPaperHeightF = page_height
+            wks_res.wkOrientation = "portrait"
+            
+        if not colormap == None:
+            colormap = parse_colormap(colormap)
+            wks_res.wkColorMap = colormap
+            
         wks = Ngl.open_wks(plot_type,file,wks_res)
+        if wks < 0 and plot_type == "x11":
+            clear_oldest_x11_window()
+            wks = Ngl.open_wks(plot_type,file,wks_res)
+    else:
+        wks = use_wks
 
     resources = Ngl.Resources()
 
@@ -1873,29 +1876,32 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             #     print('had to skip an ellipse: ', overlay_ellipses_x[i], overlay_ellipses_y[i], overlay_ellipses_x[i], overlay_ellipses_y[i])
 
 
-                
-    Ngl.draw(plot)
-    Ngl.frame(wks)
+    if not use_wks == None:
+        Ngl.draw(plot)
+        Ngl.frame(wks)
     
-    if not file==None:
-        Ngl.delete_wks(wks)
-        #
-        if makepng:
-            pdf_to_png(file, density=png_dens)
+        if not file==None:
+            Ngl.delete_wks(wks)
+            #
+            if makepng:
+                pdf_to_png(file, density=png_dens)
+        else:
+            x11_window_list.append(wks)
     else:
-        x11_window_list.append(wks)
+        return plot
 
 
 
 
 ################################################################################
     
-def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, makepng=False, png_dens=pngdens):  #scaled_cumulative_output=False
+def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, makepng=False, png_dens=pngdens, use_wks=None):  #scaled_cumulative_output=False
 
     ## takes as fundamental argument, data_in, either a single numpy array or a list of numpy arrays
 
-    plot_type = get_workstation_type(file)
-
+    if not use_wks == None:
+        plot_type = get_workstation_type(file)
+        
     if type(data_in) == type(np.arange(0)) or type(data_in) == type(np.ma.arange(0)):
         data_in_ndarray=True
     else:
@@ -2002,22 +2008,25 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                 dxmean = dx[0]
 
         if FirstIteration:
-            wks_res = Ngl.Resources()
-            if file == None:
-                wks_res.wkPause = False
-            else:
-                wks_res.wkPaperWidthF = page_width
-                wks_res.wkPaperHeightF = page_height
-                wks_res.wkOrientation = "portrait"
-
-            if not colormap == None:
-                colormap = parse_colormap(colormap)
-                wks_res.wkColorMap = colormap
-            
-            wks = Ngl.open_wks(plot_type,file,wks_res)
-            if wks < 0 and plot_type == "x11":
-                clear_oldest_x11_window()
+            if not use_wks == None:
+                wks_res = Ngl.Resources()
+                if file == None:
+                    wks_res.wkPause = False
+                else:
+                    wks_res.wkPaperWidthF = page_width
+                    wks_res.wkPaperHeightF = page_height
+                    wks_res.wkOrientation = "portrait"
+                    
+                if not colormap == None:
+                    colormap = parse_colormap(colormap)
+                    wks_res.wkColorMap = colormap
+                
                 wks = Ngl.open_wks(plot_type,file,wks_res)
+                if wks < 0 and plot_type == "x11":
+                    clear_oldest_x11_window()
+                    wks = Ngl.open_wks(plot_type,file,wks_res)
+            else:
+                wks = use_wks
             #
             hist_res = Ngl.Resources()
             hist_res.nglDraw = True
@@ -2372,24 +2381,26 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
             else:
                 Ngl.add_polyline(wks,thehist, zly, zlx, meanline_res)             
 
-
-    Ngl.draw(thehist)
-
-    
-    if not file==None:
-        #
-        if makepng:
-            pdf_to_png(file, density=png_dens)
-        #
-        if return_histstats:
-            Ngl.delete_wks(wks)
-            return output_binedges, output_binfreq
-        else:   
-            Ngl.delete_wks(wks)
+    if not use_wks == None:
+        Ngl.draw(thehist)
+        
+        
+        if not file==None:
+            #
+            if makepng:
+                pdf_to_png(file, density=png_dens)
+            #
+            if return_histstats:
+                Ngl.delete_wks(wks)
+                return output_binedges, output_binfreq
+            else:   
+                Ngl.delete_wks(wks)
+        else:
+            x11_window_list.append(wks)
+            if return_histstats:
+                return output_binedges, output_binfreq
     else:
-        x11_window_list.append(wks)
-        if return_histstats:
-            return output_binedges, output_binfreq
+        return thehist
 
 
 
