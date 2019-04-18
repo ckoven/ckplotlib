@@ -3327,7 +3327,7 @@ def make_ellipse(x=0.0, y=0.0, a=0.0, b=0.0, angle=0.0, k=1./12):
 
     return pts_x, pts_y
 
-def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False):
+def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False, log_plots=None):
     """ This function creates a matrix of plots of data relative to each other, where diagonal elements are hsitograms and off-diagonal elements are xy plot.  
     Idea is similar to the pariplot routine in seaborne and pandas, but generalized to allow a last dimension that defines lines/curves rather than merely points in a space"""
     #
@@ -3365,11 +3365,20 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                     xtitle=datatitles[j]   # 'i = '+str(i) + 'j = '+str(j)
                 else:
                     xtitle=' '
+                #
                 if j == 0:
                     ytitle=datatitles[i]   # 'i = '+str(i) + 'j = '+str(j)#
                 else:
                     ytitle=' '
-                plots.append(xyplot(data_array[:,:,i], data_array[:,:,j], file='pairplot1', linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=[-6,8], yrange=[-6,8], use_wks=wks, ytitle=ytitle, xtitle=xtitle))
+                #
+                if type(log_plots) != type(None):
+                    ylog = log_plots[j]
+                    xlog = log_plots[i]
+                else:
+                    ylog = False
+                    xlog = False
+                #
+                plots.append(xyplot(data_array[:,:,i], data_array[:,:,j], file='pairplot1', linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=[-6,8], yrange=[-6,8], use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
             else:
                 plots.append(0)
     #
