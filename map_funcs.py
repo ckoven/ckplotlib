@@ -765,7 +765,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None):
 
-    if not use_wks == None:
+    if use_wks == None:
         plot_type = get_workstation_type(file)
         
         if  Nonemask:
@@ -860,7 +860,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
     else:
         resources.xyLineThicknessF = linethickness
 
-    if colors != None:
+    if type(colors) != type(None):
         resources.xyLineColors = colors
 
 
@@ -1876,7 +1876,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             #     print('had to skip an ellipse: ', overlay_ellipses_x[i], overlay_ellipses_y[i], overlay_ellipses_x[i], overlay_ellipses_y[i])
 
 
-    if not use_wks == None:
+    if use_wks == None:
         Ngl.draw(plot)
         Ngl.frame(wks)
     
@@ -1899,7 +1899,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
     ## takes as fundamental argument, data_in, either a single numpy array or a list of numpy arrays
 
-    if not use_wks == None:
+    if use_wks == None:
         plot_type = get_workstation_type(file)
         
     if type(data_in) == type(np.arange(0)) or type(data_in) == type(np.ma.arange(0)):
@@ -2008,7 +2008,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                 dxmean = dx[0]
 
         if FirstIteration:
-            if not use_wks == None:
+            if use_wks == None:
                 wks_res = Ngl.Resources()
                 if file == None:
                     wks_res.wkPause = False
@@ -2166,7 +2166,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                 zly = [0., 2.*hist_res.trYMaxF]
                 Ngl.add_polyline(wks,thehist, zlx, zly, zeroline_res)
 
-            if vlines != None:
+            if type(vlines) != type(None):
                 for line_i in range(len(vlines)):
                     vline_res = Ngl.Resources()
                     if vlines_dashpattern != None:
@@ -2381,7 +2381,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
             else:
                 Ngl.add_polyline(wks,thehist, zly, zlx, meanline_res)             
 
-    if not use_wks == None:
+    if use_wks == None:
         Ngl.draw(thehist)
         
         
@@ -3327,3 +3327,60 @@ def make_ellipse(x=0.0, y=0.0, a=0.0, b=0.0, angle=0.0, k=1./12):
 
     return pts_x, pts_y
 
+def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False):
+    """ This function creates a matrix of plots of data relative to each other, where diagonal elements are hsitograms and off-diagonal elements are xy plot.  
+    Idea is similar to the pariplot routine in seaborne and pandas, but generalized to allow a last dimension that defines lines/curves rather than merely points in a space"""
+    #
+    plot_type = get_workstation_type(file)
+    #    
+    wks_res = Ngl.Resources()
+    if plot_type == 'x11':
+        wks_res.wkPause = False
+    elif plot_type == 'png':
+        wks_res.wkWidth = page_width * 100
+        wks_res.wkHeight = page_height * 100
+    else:
+        wks_res.wkPaperWidthF = page_width
+        wks_res.wkPaperHeightF = page_height
+        wks_res.wkOrientation = "portrait"
+    #
+    if not colormap == None:
+        colormap = parse_colormap(colormap)
+        wks_res.wkColorMap = colormap
+    #    
+    wks = Ngl.open_wks(plot_type,file,wks_res)
+    if wks < 0 and plot_type == "x11":
+        clear_oldest_x11_window()
+        wks = Ngl.open_wks(plot_type,file,wks_res)
+    #
+    print(data_array.shape)
+    n_dataframes = data_array.shape[2]
+    #
+    plots = []
+    #
+    for i in range(n_dataframes):
+        for j in range(n_dataframes):
+            if i > j:
+                if i == n_dataframes-1:
+                    xtitle=datatitles[j]   # 'i = '+str(i) + 'j = '+str(j)
+                else:
+                    xtitle=' '
+                if j == 0:
+                    ytitle=datatitles[i]   # 'i = '+str(i) + 'j = '+str(j)#
+                else:
+                    ytitle=' '
+                plots.append(xyplot(data_array[:,:,i], data_array[:,:,j], file='pairplot1', linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=[-6,8], yrange=[-6,8], use_wks=wks, ytitle=ytitle, xtitle=xtitle))
+            else:
+                plots.append(0)
+    #
+    Ngl.panel(wks, plots, dims=[n_dataframes,n_dataframes])
+    #
+    Ngl.frame(wks)
+    #
+    if not file==None:
+        Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
+    else:
+        x11_window_list.append(wks)
