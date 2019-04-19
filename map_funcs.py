@@ -3327,12 +3327,18 @@ def make_ellipse(x=0.0, y=0.0, a=0.0, b=0.0, angle=0.0, k=1./12):
 
     return pts_x, pts_y
 
-def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False, log_plots=None):
+def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False, log_plots=None, position='ur'):
     """ This function creates a matrix of plots of data relative to each other, where diagonal elements are hsitograms and off-diagonal elements are xy plot.  
-    Idea is similar to the pariplot routine in seaborne and pandas, but generalized to allow a last dimension that defines lines/curves rather than merely points in a space"""
+    Idea is similar to the pariplot routine in seaborne and pandas, but generalized to allow a last dimension that defines lines/curves rather than merely points in a space
+    Possible values for position argument are 'ur' for upper right and 'll' for lower left"""
     #
     plot_type = get_workstation_type(file)
-    #    
+    #
+    #
+    possible_positions = ['ur','ll']
+    if not position in possible_positions:
+        raise Exception
+    #
     wks_res = Ngl.Resources()
     if plot_type == 'x11':
         wks_res.wkPause = False
@@ -3358,27 +3364,37 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
     #
     plots = []
     #
-    for i in range(n_dataframes):
-        for j in range(n_dataframes):
-            if i > j:
-                if i == n_dataframes-1:
-                    xtitle=datatitles[j]   # 'i = '+str(i) + 'j = '+str(j)
+    for ypos in range(n_dataframes):
+        for xpos in range(n_dataframes):
+            if ((ypos > xpos) and position == 'll') or ((ypos < xpos) and position == 'ur'):
+                if ypos == n_dataframes-1 and position == 'll':
+                    xtitle=datatitles[xpos]
+                elif ypos == xpos-1 and position == 'ur':
+                    xtitle=datatitles[xpos]
                 else:
                     xtitle=' '
                 #
-                if j == 0:
-                    ytitle=datatitles[i]   # 'i = '+str(i) + 'j = '+str(j)#
+                if xpos == 0 and position == 'll':
+                    ytitle=datatitles[ypos]
+                elif xpos == ypos+1 and position == 'ur':
+                    ytitle=datatitles[ypos]
                 else:
                     ytitle=' '
                 #
                 if type(log_plots) != type(None):
-                    ylog = log_plots[j]
-                    xlog = log_plots[i]
+                    ylog = log_plots[xpos]
+                    xlog = log_plots[ypos]
                 else:
                     ylog = False
                     xlog = False
                 #
-                plots.append(xyplot(data_array[:,:,i], data_array[:,:,j], file='pairplot1', linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=[-6,8], yrange=[-6,8], use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
+                datax = data_array[:,:,xpos]
+                datay = data_array[:,:,ypos]
+                #
+                rangex = [datax.min(), datax.max()]
+                rangey = [datay.min(), datay.max()]
+                #
+                plots.append(xyplot(datax, datay, file='pairplot1', linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=rangex, yrange=rangey, use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
             else:
                 plots.append(0)
     #
