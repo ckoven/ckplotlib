@@ -7,7 +7,15 @@ import os.path
 import subprocess
 import inspect
 import os
+import shlex
+try:
+    from IPython.display import Image, display
+    jupyter_avail = True
+except:
+    jupyter_avail = False
 
+#print(jupyter_avail)
+    
 print(Ngl.__version__)
 
 ## these are a set of plotting functions using the PyNGL library, developed by C. Koven for own use.
@@ -52,20 +60,27 @@ def clear_oldest_x11_window():
     except:
         print('trying to close the oldest x11 window but none are open!')
 
-pngdens = 600
+pngdens = 150
 
 def pdf_to_png(file, density=pngdens):
     ### call some command-line tools to convert a pdf file to a png file.
-    ### first crop the pdf file usiing the perl script pdfcrop (which is in this directory)
-    os.system('pwd')
-    # print(a)
-    dirname = os.path.dirname(os.path.realpath(__file__))
-    command1string = dirname+'/pdfcrop '+file+'.pdf '+file+'_crop.pdf'
-    os.system(command1string)
-    command2string = 'convert -trim -density '+str(density)+' '+file+'_crop.pdf '+file+'.png'
-    os.system(command2string)
-    command3string = 'rm -f '+file+'_crop.pdf'
-    os.system(command3string)
+    ### this assumes that imagemagick tool convert is available, and will use the latex/perl tool pdfcrop if it is available
+    ### first crop the pdf file using the perl script pdfcrop (which is in this directory)
+    pwdpath = os.getcwd()
+    try:
+        subprocess.check_output(['which','pdfcrop'])
+        haspdfcrop=True
+    except:
+        haspdfcrop=False
+    if haspdfcrop:
+        subprocess.call(['pdfcrop',pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'_crop.pdf'])
+        command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'_crop.pdf',pwdpath+'/'+file+'.png']
+        subprocess.call(command2stringlist)
+        command3stringlist = ['rm','-f',pwdpath+'/'+file+'_crop.pdf']
+        subprocess.call(command3stringlist)
+    else:
+        command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
+        subprocess.check_call(command2stringlist)
 
 def parse_colormap(colormap):
     ### this is to allow the user to specify ether the standard list of PyNGL color tables, or alternately a set of predefined color tables, e.g. the colorbrewer maps, etc.
@@ -763,7 +778,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None, overlay_shadederror_ulimit=None, overlay_shadederror_llimit=None, showjupyter=False):
 
     if use_wks == None:
         plot_type = get_workstation_type(file)
@@ -1358,10 +1373,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             # bckgrd_res = deepcopy(resources)
             # bckgrd_res.txFontThicknessF = 2.
             # pstring.extend([Ngl.add_text(wks,plot,labels[i],label_xstart,label_ystart-labelorder[i]*label_yspace,bckgrd_res)])
-            if labelcolors != None:
+            if type(labelcolors) != type(None):
                 if labelcolors[i] >= 0:
                     resources.txFontColor = labelcolors[i]
-            elif colors != None:
+            elif type(colors) != type(None):
                 if colors[i] >= 0:
                     resources.txFontColor = colors[i]
             if not xlog:
@@ -1486,6 +1501,10 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 else:                    
                     polyres.gsFillColor = shadederror_color[i]                    
                     polyres.gsEdgeColor = shadederror_color[i]
+            else:
+                if type(colors) != type(None):
+                    polyres.gsFillColor = colors[i]
+                    polyres.gsEdgeColor = colors[i]
             if shadederror_fillpattern != None:
                 polyres.gsFillIndex = shadederror_fillpattern[i]
                 polyres.gsEdgesOn = True
@@ -1527,10 +1546,16 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 shape_x = np.concatenate((x[i,:]+shadederror_thickness_yindepvar[i,:],x[i,::-1]-shadederror_thickness_yindepvar[i,::-1]))
             a = Ngl.add_polygon(wks,plot, shape_x, shape_y, polyres)
             
-    if overlay_shadederror_thickness != None:
+    if type(overlay_shadederror_thickness) != type(None) or (type(overlay_shadederror_ulimit) != type(None) and type(overlay_shadederror_llimit) != type(None)):
         ### this is for surrounding each line with a shaded error area
-        if overlay_shadederror_thickness.shape != overlay_y.shape:
-            raise RuntimeError
+        if type(shadederror_thickness) != type(None):
+            if overlay_shadederror_thickness.shape != overlay_y.shape:
+                raise RuntimeError
+            symmetric = True
+        else:
+            if overlay_shadederror_ulimit.shape != overlay_y.shape or overlay_shadederror_llimit.shape != overlay_y.shape:
+                raise RuntimeError
+            symmetric = False                       
         if len(overlay_y.shape) == 1:
             npoly = 1
         else:
@@ -1545,10 +1570,18 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     polyres.gsFillColor = shadederror_color[i]
             if shadederror_fillpattern != None:
                 polyres.gsFillIndex = shadederror_fillpattern[i]
-            if len(overlay_y.shape) == 1:
-                shape_y = np.concatenate((overlay_y[:]+overlay_shadederror_thickness[:],overlay_y[::-1]-overlay_shadederror_thickness[::-1]))
+            if shadederror_opacity != None:
+                polyres.gsFillOpacityF = shadederror_opacity
+            if symmetric:
+                if len(overlay_y.shape) == 1:
+                    shape_y = np.concatenate((overlay_y[:]+overlay_shadederror_thickness[:],overlay_y[::-1]-overlay_shadederror_thickness[::-1]))
+                else:
+                    shape_y = np.concatenate((overlay_y[i,:]+overlay_shadederror_thickness[i,:],overlay_y[i,::-1]-overlay_shadederror_thickness[i,::-1]))
             else:
-                shape_y = np.concatenate((overlay_y[i,:]+overlay_shadederror_thickness[i,:],overlay_y[i,::-1]-overlay_shadederror_thickness[i,::-1]))
+                if len(overlay_y.shape) == 1:
+                    shape_y = np.concatenate((overlay_shadederror_ulimit[:],overlay_shadederror_llimit[::-1]))
+                else:
+                    shape_y = np.concatenate((overlay_shadederror_ulimit[i,:],overlay_shadederror_llimit[i,::-1]))
             a = Ngl.add_polygon(wks,plot, shape_x, shape_y, polyres)
 
     if box_whisker_plot:
@@ -1883,8 +1916,12 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
         if not file==None:
             Ngl.delete_wks(wks)
             #
-            if makepng:
+            if makepng or showjupyter:
                 pdf_to_png(file, density=png_dens)
+            if jupyter_avail and showjupyter:
+                print(' ')
+                print('showing file '+file)
+                display(Image(file+'.png'))
         else:
             x11_window_list.append(wks)
     else:
@@ -1895,7 +1932,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
 ################################################################################
     
-def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, makepng=False, png_dens=pngdens, use_wks=None):  #scaled_cumulative_output=False
+def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False):  #scaled_cumulative_output=False
 
     ## takes as fundamental argument, data_in, either a single numpy array or a list of numpy arrays
 
@@ -2053,28 +2090,32 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                 hist_res.trYMaxF  = max_y
                 #
                 hist_res.tmXBMode       = "Explicit"    # Define own tick mark labels.
-                if label_binedges:
-                    if bin_edges.size <= maxlabels:
-                        hist_res.tmXBValues     = bin_edges
-                        hist_res.tmXBLabels     = bin_edges
-                        hist_res.tmXBMinorOn    = False      # No minor tick marks.
+                if maxlabels > 0:
+                    if label_binedges:
+                        if bin_edges.size <= maxlabels:
+                            hist_res.tmXBValues     = bin_edges
+                            hist_res.tmXBLabels     = bin_edges
+                            hist_res.tmXBMinorOn    = False      # No minor tick marks.
+                        else:
+                            nskip = int(math.ceil(bin_edges.size / maxlabels))
+                            hist_res.tmXBValues     = bin_edges[::nskip]
+                            hist_res.tmXBLabels     = bin_edges[::nskip]
+                            hist_res.tmXBMinorOn    = True      # No minor tick marks.
+                            hist_res.tmXBMinorValues = bin_edges
                     else:
-                        nskip = int(math.ceil(bin_edges.size / maxlabels))
-                        hist_res.tmXBValues     = bin_edges[::nskip]
-                        hist_res.tmXBLabels     = bin_edges[::nskip]
-                        hist_res.tmXBMinorOn    = True      # No minor tick marks.
-                        hist_res.tmXBMinorValues = bin_edges
+                        if bin_centers.size <= maxlabels:
+                            hist_res.tmXBValues     = bin_centers
+                            hist_res.tmXBLabels     = bin_centers
+                            hist_res.tmXBMinorOn    = False      # No minor tick marks.
+                        else:
+                            nskip = int(math.ceil(bin_centers.size / maxlabels))
+                            hist_res.tmXBValues     = bin_centers[::nskip]
+                            hist_res.tmXBLabels     = bin_centers[::nskip]
+                            hist_res.tmXBMinorOn    = True      # No minor tick marks.
+                            hist_res.tmXBMinorValues = bin_centers
                 else:
-                    if bin_centers.size <= maxlabels:
-                        hist_res.tmXBValues     = bin_centers
-                        hist_res.tmXBLabels     = bin_centers
-                        hist_res.tmXBMinorOn    = False      # No minor tick marks.
-                    else:
-                        nskip = int(math.ceil(bin_centers.size / maxlabels))
-                        hist_res.tmXBValues     = bin_centers[::nskip]
-                        hist_res.tmXBLabels     = bin_centers[::nskip]
-                        hist_res.tmXBMinorOn    = True      # No minor tick marks.
-                        hist_res.tmXBMinorValues = bin_centers
+                    hist_res.tmXBLabelsOn    = False
+                    hist_res.tmYLLabelsOn    = False
                 #
                 hist_res.tmXTOn         = False      # turn off the top tickmarks
                 #
@@ -2387,14 +2428,24 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
         
         if not file==None:
             #
-            if makepng:
-                pdf_to_png(file, density=png_dens)
-            #
             if return_histstats:
                 Ngl.delete_wks(wks)
+                if makepng or showjupyter:
+                    pdf_to_png(file, density=png_dens)
+                if jupyter_avail and showjupyter:
+                    print(' ')
+                    print('showing file '+file)
+                    display(Image(file+'.png'))
                 return output_binedges, output_binfreq
             else:   
                 Ngl.delete_wks(wks)
+                if makepng or showjupyter:
+                    pdf_to_png(file, density=png_dens)
+                if jupyter_avail and showjupyter:
+                    print(' ')
+                    print('showing file '+file)
+                    display(Image(file+'.png'))
+            #
         else:
             x11_window_list.append(wks)
             if return_histstats:
@@ -3100,7 +3151,7 @@ def make_arrow(x1, y1, x2, y2, arrowheadlength, arrowheadwidth, greatcircle=Fals
             #     arrowbody_x[arrowbody_x < 0.] = arrowbody_x[arrowbody_x > 180.] + 360.
             # print(dx)
             # print(arrowbody_x)
-            # print()
+            # print(' ')
         lastsegment_x1 = arrowbody_x[npts_gc-2]
         lastsegment_x2 = arrowbody_x[npts_gc-1]
         lastsegment_y1 = arrowbody_y[npts_gc-2]
@@ -3327,7 +3378,7 @@ def make_ellipse(x=0.0, y=0.0, a=0.0, b=0.0, angle=0.0, k=1./12):
 
     return pts_x, pts_y
 
-def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False, log_plots=None, position='ur'):
+def pairplot(data_array, colors=None, levels=None, title=None, file=None, datatitles=None, colormap=None, makepng=False, log_plots=None, position='ur', ranges=None, hist_sep=None, plot_hists=False, labelbar=False):
     """ This function creates a matrix of plots of data relative to each other, where diagonal elements are hsitograms and off-diagonal elements are xy plot.  
     Idea is similar to the pariplot routine in seaborne and pandas, but generalized to allow a last dimension that defines lines/curves rather than merely points in a space
     Possible values for position argument are 'ur' for upper right and 'll' for lower left"""
@@ -3367,23 +3418,23 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
     for ypos in range(n_dataframes):
         for xpos in range(n_dataframes):
             if ((ypos > xpos) and position == 'll') or ((ypos < xpos) and position == 'ur'):
-                if ypos == n_dataframes-1 and position == 'll':
+                if ypos == n_dataframes-1 and position == 'll' and type(datatitles) != type(None):
                     xtitle=datatitles[xpos]
-                elif ypos == xpos-1 and position == 'ur':
+                elif ypos == xpos-1 and position == 'ur' and type(datatitles) != type(None):
                     xtitle=datatitles[xpos]
                 else:
                     xtitle=' '
                 #
-                if xpos == 0 and position == 'll':
+                if xpos == 0 and position == 'll' and type(datatitles) != type(None):
                     ytitle=datatitles[ypos]
-                elif xpos == ypos+1 and position == 'ur':
+                elif xpos == ypos+1 and position == 'ur' and type(datatitles) != type(None):
                     ytitle=datatitles[ypos]
                 else:
                     ytitle=' '
                 #
                 if type(log_plots) != type(None):
-                    ylog = log_plots[xpos]
-                    xlog = log_plots[ypos]
+                    ylog = log_plots[ypos]
+                    xlog = log_plots[xpos]
                 else:
                     ylog = False
                     xlog = False
@@ -3391,16 +3442,41 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                 datax = data_array[:,:,xpos]
                 datay = data_array[:,:,ypos]
                 #
-                rangex = [datax.min(), datax.max()]
-                rangey = [datay.min(), datay.max()]
+                if type(ranges) == type(None):
+                    rangex = [datax.min(), datax.max()]
+                    rangey = [datay.min(), datay.max()]
+                else:
+                    rangex = ranges[xpos]
+                    rangey = ranges[ypos]
                 #
-                plots.append(xyplot(datax, datay, file='pairplot1', linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=rangex, yrange=rangey, use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
+                plots.append(xyplot(datax, datay, linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=rangex, yrange=rangey, use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
+            elif xpos == ypos and plot_hists:
+                #
+                data_unsorted = data_array[:,:,xpos]
+                print(data_unsorted.shape)
+                print(hist_sep.shape)
+                #
+                if type(hist_sep) != type(None):
+                    n_sorts = hist_sep.max()
+                    nbins = data_unsorted.shape[0]
+                    hist_sorted = data_unsorted.copy()
+                    for i in range(nbins):
+                        hist_sorted[i,0] = data_unsorted[i,hist_sep[i]]
+                        hist_sorted[i,1] = data_unsorted[i,1-hist_sep[i]]                        
+                if type(ranges) == type(None):
+                    rangex = [data_unsorted.min(), data_unsorted.max()]
+                else:
+                    rangex = ranges[xpos]
+                plots.append(plot_histogram(hist_sorted, use_wks=wks, therange=rangex, label_binedges=False, maxlabels=0))
             else:
                 plots.append(0)
     #
-    Ngl.panel(wks, plots, dims=[n_dataframes,n_dataframes])
+    panel_res = Ngl.Resources()
+    panel_res.nglPanelLabelBar = labelbar
     #
-    Ngl.frame(wks)
+    Ngl.panel(wks, plots, [n_dataframes,n_dataframes], panel_res)
+    #
+    #Ngl.frame(wks)
     #
     if not file==None:
         Ngl.delete_wks(wks)
@@ -3409,3 +3485,5 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
             pdf_to_png(file, density=png_dens)
     else:
         x11_window_list.append(wks)
+
+        
