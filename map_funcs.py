@@ -416,7 +416,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False):
 
 
     if len(lat.shape) == 1 and len(lon.shape) == 1:
@@ -769,8 +769,12 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
     if not file==None:
         Ngl.delete_wks(wks)
         #
-        if makepng:
+        if makepng or showjupyter:
             pdf_to_png(file, density=png_dens)
+        if jupyter_avail and showjupyter:
+            print(' ')
+            print('showing file '+file)
+            display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
 
@@ -2456,7 +2460,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
 
 ################
-def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None, makepng=False, png_dens=pngdens):
+def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None, makepng=False, png_dens=pngdens, showjupyter=False):
     IM = x.shape[0]
     JM = y.shape[0]
     data = np.squeeze(data[:])
@@ -2789,8 +2793,12 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     if not file==None:
         Ngl.delete_wks(wks)
         #
-        if makepng:
+        if makepng or showjupyter:
             pdf_to_png(file, density=png_dens)
+        if jupyter_avail and showjupyter:
+            print(' ')
+            print('showing file '+file)
+            display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
 
