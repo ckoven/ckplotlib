@@ -174,19 +174,21 @@ def area_average(x, lat, lon, minlat=None, maxlat=None, minlon=None, maxlon=None
             x = np.rollaxis(x, lataxis-1, ndims-2)
     #
     x_shape = x.shape
-    if x_shape[len(x_shape)-2] == len(lat):
-        lat_edges_in = False
-    elif x_shape[len(x_shape)-2] == len(lat)-1:
-        lat_edges_in = True
-    else:
-        raise NotImplementedError
-    if x_shape[len(x_shape)-1] == len(lon):
-        lon_edges_in = False
-    elif x_shape[len(x_shape)-1] ==len(lon)-1:
-        lon_edges_in = True
-    else:
-        raise NotImplementedError
-    if area == None:
+    if type(lat) != type(None) and type(lon) != type(None):
+        if x_shape[len(x_shape)-2] == len(lat):
+            lat_edges_in = False
+        elif x_shape[len(x_shape)-2] == len(lat)-1:
+            lat_edges_in = True
+        else:
+            raise NotImplementedError
+        if x_shape[len(x_shape)-1] == len(lon):
+            lon_edges_in = False
+        elif x_shape[len(x_shape)-1] ==len(lon)-1:
+            lon_edges_in = True
+        else:
+            raise NotImplementedError
+    #
+    if type(area) == type(None):
         area = gridcell_areas(lat, lon, lon_edges_in=lon_edges_in, lat_edges_in=lat_edges_in)
     #
     if type(x) == type(np.ma.masked_array()):

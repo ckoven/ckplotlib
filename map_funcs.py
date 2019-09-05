@@ -397,6 +397,14 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             # else:
             #     resources.mpMaxLatF             = latlimits[1]        # to zoom in on.
             #     resources.mpMinLatF             = latlimits[0]
+    elif projection == "Robinson":
+        resources.mpLimitMode           = "MaximalArea"
+        resources.mpCenterLatF          = 0.
+        resources.mpCenterLonF          = 11.
+        resources.mpPerimOn = False
+        resources.mpGridAndLimbOn =  True
+        resources.mpGridLineColor   = "transparent"     # we don't want lat/lon lines
+        resources.pmTickMarkDisplayMode    = "Never"     # Don't draw tickmark border.
     else:
         resources.mpLimitMode           = "LatLon"   # Specify area of map
         if not nomaplimits:
