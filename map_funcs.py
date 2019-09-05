@@ -60,7 +60,7 @@ def clear_oldest_x11_window():
     except:
         print('trying to close the oldest x11 window but none are open!')
 
-pngdens = 150
+pngdens = 300
 
 def pdf_to_png(file, density=pngdens):
     ### call some command-line tools to convert a pdf file to a png file.
@@ -147,7 +147,9 @@ def parse_colormap(colormap):
                              'tbr_var_0-500', 'temp1', 'temp_19lev', 'temp_diff_18lev', 'temp_diff_1lev',
                              'testcmap', 'thelix', 'topo_15lev', 'uniform', 'wgne15',
                              'wh-bl-gr-ye-re', 'wind_17lev', 'wxpEnIR']
-    if colormap in Ngl_colormap_list_new:
+    if colormap in Ngl_colormap_list_new or type(colormap) == type([]):
+        if type(colormap) == type([]):
+            print(colormap)
         return colormap
     else:
         # if colormap == 'cb_GnBu':
@@ -197,6 +199,10 @@ def parse_colormap(colormap):
                                     [158, 158, 158], [153, 153, 153], [148, 148, 148], [143, 143, 143], [138, 138, 138], [133, 133, 133], [128, 128, 128], [122, 122, 122], [117, 117, 117], [112, 112, 112], [107, 107, 107],
                                     [102, 102, 102], [97, 97, 97], [92, 92, 92], [87, 87, 87], [82, 82, 82], [77, 77, 77], [71, 71, 71], [66, 66, 66], [61, 61, 61], [56, 56, 56], [51, 51, 51],
                                     [46, 46, 46], [41, 41, 41], [36, 36, 36], [31, 31, 31], [26, 26, 26], [20, 20, 20], [15, 15, 15], [10, 10, 10], [5, 5, 5], [0, 0, 0]]) / 256.
+        elif colormap == 'ck_BlueRedBlack':
+            colorvalues = np.array([[256,256,256], [0,0,0], [0,0,256], [256,0,0], [0,0,0]])/256.
+        elif colormap == 'ck_BlueBlackRed':
+            colorvalues = np.array([[256,256,256], [0,0,0], [0,0,256], [0,0,0], [256,0,0]])/256.
         else:
             #raise RuntimeError('colormap name must be either a pyngl named colormap or else from the list of user-defined ones')
             colorvalues = colormap
@@ -782,7 +788,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None, overlay_shadederror_ulimit=None, overlay_shadederror_llimit=None, showjupyter=False):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, line_opacity=1., overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, overlaylabel_xspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, overlay_vectors_thickness=1.0, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None, overlay_shadederror_ulimit=None, overlay_shadederror_llimit=None, showjupyter=False):
 
     if use_wks == None:
         plot_type = get_workstation_type(file)
@@ -878,6 +884,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
     else:
         resources.xyLineThicknessF = linethickness
+        resources.xyLineOpacityF = line_opacity
 
     if type(colors) != type(None):
         resources.xyLineColors = colors
@@ -1413,6 +1420,8 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             overlaylabelystart = label_ystart - nlabels * label_yspace
         if overlaylabel_yspace == None:
             overlaylabel_yspace = label_yspace
+        if overlaylabel_xspace == None:
+            overlaylabel_xspace = label_xspace
         for i in range(nlabels_overlay):
             if overlay_color != None:
                 if type(overlay_color) == type(3) or type(overlay_color) == type("a string"):
@@ -1421,7 +1430,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     if overlay_color[i] >= 0:
                         resources.txFontColor = overlay_color[i]
             ### print(overlay_labels[i],overlaylabelxstart,overlaylabelystart+overlay_labelorder[i] * label_yspace)
-            pstring = Ngl.add_text(wks,plot,overlay_labels[i],overlaylabelxstart,overlaylabelystart+overlay_labelorder[i] * overlaylabel_yspace,resources)
+            pstring = Ngl.add_text(wks,plot,overlay_labels[i],overlaylabelxstart+overlay_labelorder[i] * overlaylabel_xspace,overlaylabelystart+overlay_labelorder[i] * overlaylabel_yspace,resources)
             
     if dashlabels != None and dashlabelpatterns != None:
         try:
@@ -1848,10 +1857,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             resources = Ngl.Resources()
             resources.gsLineColor = colorbars_int[marker_colorlevel[ii]]
             resources.gsLineThicknessF = linethickness
+            resources.gsLineOpacityF = line_opacity
             pmarker = Ngl.add_polyline(wks, plot, x[ii,:], y[ii,:], resources)
 
 
-    if (overlay_vectors_x != None) and (overlay_vectors_y != None):
+    if (type(overlay_vectors_x) != type(None)) and (type(overlay_vectors_y) != type(None)):
         # draw arrows on plot.  assume x and y arguments are nx2 arrays, with the first column being the arrow start and the second column being the arrow end
         if overlay_vectors_x.shape != overlay_vectors_y.shape:
             raise RuntimeError
@@ -1868,6 +1878,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             overlay_vectors_arrowheadwidth = 0.1
         for i in range(narrows):
             arrow_res = Ngl.Resources()
+            arrow_res.gsLineThicknessF = overlay_vectors_thickness
             try:
                 if overlay_vectors_forwards:
                     arrow_x, arrow_y = make_arrow(overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1], overlay_vectors_arrowheadlength, overlay_vectors_arrowheadwidth)
@@ -2183,7 +2194,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
             hist_res.tmYLMinorLengthF        = 0.005
             hist_res.tmYLMinorOutwardLengthF = 0.005
             hist_res.tmXBLabelAngleF         = 90.  ## rotate x-axis labels
-            hist_res.tmXBLabelJust     = "CenterLeft"
+            hist_res.tmXBLabelJust     = "CenterRight"
 
 
             if aspect_ratio != None:
