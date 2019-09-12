@@ -60,14 +60,14 @@ def clear_oldest_x11_window():
     except:
         print('trying to close the oldest x11 window but none are open!')
 
-pngdens = 150
+pngdens = 100
 
 def pdf_to_png(file, density=pngdens):
     ### call some command-line tools to convert a pdf file to a png file.
     ### this assumes that imagemagick tool convert is available, and will use the latex/perl tool pdfcrop if it is available
     ### first crop the pdf file using the perl script pdfcrop (which is in this directory)
     pwdpath = os.getcwd()
-    command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
+    command2stringlist = ['convert','-bordercolor','white','-border','1x1','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
     subprocess.check_call(command2stringlist)
 
 def parse_colormap(colormap):
@@ -775,7 +775,6 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
             pdf_to_png(file, density=png_dens)
         if jupyter_avail and showjupyter:
             print(' ')
-            print('showing file '+file)
             display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
@@ -1931,7 +1930,6 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 pdf_to_png(file, density=png_dens)
             if jupyter_avail and showjupyter:
                 print(' ')
-                print('showing file '+file)
                 display(Image(file+'.png'))
         else:
             x11_window_list.append(wks)
@@ -2445,7 +2443,6 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                     pdf_to_png(file, density=png_dens)
                 if jupyter_avail and showjupyter:
                     print(' ')
-                    print('showing file '+file)
                     display(Image(file+'.png'))
                 return output_binedges, output_binfreq
             else:   
@@ -2454,7 +2451,6 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                     pdf_to_png(file, density=png_dens)
                 if jupyter_avail and showjupyter:
                     print(' ')
-                    print('showing file '+file)
                     display(Image(file+'.png'))
             #
         else:
@@ -2804,7 +2800,6 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
             pdf_to_png(file, density=png_dens)
         if jupyter_avail and showjupyter:
             print(' ')
-            print('showing file '+file)
             display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
