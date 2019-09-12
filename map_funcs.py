@@ -60,27 +60,15 @@ def clear_oldest_x11_window():
     except:
         print('trying to close the oldest x11 window but none are open!')
 
-pngdens = 300
+pngdens = 150
 
 def pdf_to_png(file, density=pngdens):
     ### call some command-line tools to convert a pdf file to a png file.
     ### this assumes that imagemagick tool convert is available, and will use the latex/perl tool pdfcrop if it is available
     ### first crop the pdf file using the perl script pdfcrop (which is in this directory)
     pwdpath = os.getcwd()
-    try:
-        subprocess.check_output(['which','pdfcrop'])
-        haspdfcrop=True
-    except:
-        haspdfcrop=False
-    if haspdfcrop:
-        subprocess.call(['pdfcrop',pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'_crop.pdf'])
-        command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'_crop.pdf',pwdpath+'/'+file+'.png']
-        subprocess.call(command2stringlist)
-        command3stringlist = ['rm','-f',pwdpath+'/'+file+'_crop.pdf']
-        subprocess.call(command3stringlist)
-    else:
-        command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
-        subprocess.check_call(command2stringlist)
+    command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
+    subprocess.check_call(command2stringlist)
 
 def parse_colormap(colormap):
     ### this is to allow the user to specify ether the standard list of PyNGL color tables, or alternately a set of predefined color tables, e.g. the colorbrewer maps, etc.
