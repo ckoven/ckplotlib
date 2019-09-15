@@ -88,7 +88,7 @@ def conservative_interp(data_in, coords_in, coords_out, axis=0):
                 elif ndims == 4:
                     data_sum_interval[:,:,:] = data_sum_interval[:,:,:] + overlap_interval * data_in[j,:,:,:]
         if overlap_interval_total < (upper_bound_out - lower_bound_out):
-            print('warning: grids do not overlap fully.  assuming value of zero for non-overlapping region. overlap_interval = '+str(overlap_interval_total)+' output grid ingterval = '+str((upper_bound_out - lower_bound_out)))
+            print(('warning: grids do not overlap fully.  assuming value of zero for non-overlapping region. overlap_interval = '+str(overlap_interval_total)+' output grid ingterval = '+str((upper_bound_out - lower_bound_out))))
         if ndims == 1:
             data_out[i] = data_sum_interval / (upper_bound_out - lower_bound_out)
         elif ndims == 2:

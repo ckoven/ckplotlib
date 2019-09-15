@@ -16,7 +16,7 @@ except:
 
 #print(jupyter_avail)
     
-print(Ngl.__version__)
+print((Ngl.__version__))
 
 ## these are a set of plotting functions using the PyNGL library, developed by C. Koven for own use.
 
@@ -598,14 +598,14 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
         Ngl.set_values(wks,rlist)
 
     if add_colors != None:
-        print(add_colors.shape)
+        print((add_colors.shape))
         cmap = Ngl.get_MDfloat_array(wks, "wkColorMap")
         cmap_length_old = cmap.shape[0]
         cmap_length_new = cmap_length_old + add_colors.shape[0]
         cmap_new = np.zeros([cmap_length_new, 3])
         cmap_new[0:cmap_length_old,:] = cmap[0:cmap_length_old,:]
         cmap_new[cmap_length_old:cmap_length_old+add_colors.shape[0],:] = add_colors[:]
-        print(cmap_new.shape)
+        print((cmap_new.shape))
         rlist = Ngl.Resources()
         rlist.wkColorMap = cmap_new
         Ngl.set_values(wks,rlist)
@@ -1892,7 +1892,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     arrow_res.gsLineColor = colorbars_int[marker_colorlevel]
                 pline = Ngl.polyline(wks,plot,arrow_x,arrow_y, arrow_res)
             except:
-                print('had to skip an arrow: ', overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1])
+                print(('had to skip an arrow: ', overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1]))
 
     if (type(overlay_ellipses_x) != type(None)) and (type(overlay_ellipses_y) != type(None)):
         # draw ellipses on plot.  
@@ -3431,7 +3431,7 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         clear_oldest_x11_window()
         wks = Ngl.open_wks(plot_type,file,wks_res)
     #
-    print(data_array.shape)
+    print((data_array.shape))
     n_dataframes = data_array.shape[2]
     #
     plots = []
@@ -3474,8 +3474,8 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
             elif xpos == ypos and plot_hists:
                 #
                 data_unsorted = data_array[:,:,xpos]
-                print(data_unsorted.shape)
-                print(hist_sep.shape)
+                print((data_unsorted.shape))
+                print((hist_sep.shape))
                 #
                 if type(hist_sep) != type(None):
                     n_sorts = hist_sep.max()

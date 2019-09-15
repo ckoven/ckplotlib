@@ -200,7 +200,7 @@ def regression_maps(x, y):
     #
     regression_map = np.ma.masked_all([IM,JM])
     for i in range(IM):
-        print(str(i) + ' of ' + str(IM))
+        print((str(i) + ' of ' + str(IM)))
         for j in range(JM):
             if not sharedmask[i,j]:
                 b, r_sq = linreg(x[:,i,j], y[:,i,j])

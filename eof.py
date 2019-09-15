@@ -24,7 +24,7 @@ def eof_2d(data_in, dimension=0, mask_number=-9999., domask=False):
 
     #convert lat/lon/time to space/time
     D=np.zeros([x,t])
-    print D.flags.writeable
+    print(D.flags.writeable)
     if not input_has_mask:
         D = np.copy(np.transpose(np.reshape(data_in, [t, IM*JM])))
     else:
@@ -74,23 +74,23 @@ def eof_2d(data_in, dimension=0, mask_number=-9999., domask=False):
     eigenvectors = eigenvectors[:,order]
 
     
-    print 'eigenvalues'
-    print eigenvalues
-    print  'sum of eigenvalues'
-    print np.sum(eigenvalues)
+    print('eigenvalues')
+    print(eigenvalues)
+    print('sum of eigenvalues')
+    print(np.sum(eigenvalues))
 
     spacing_error_ratio = (eigenvalues[0:t-2]-eigenvalues[1:t-1])/(eigenvalues[0:t-2]*np.sqrt(2./t))  ##  based on North et al. 1982
-    print 'ratio of eigenvalue spacing to relative error'
-    print spacing_error_ratio
+    print('ratio of eigenvalue spacing to relative error')
+    print(spacing_error_ratio)
 
     var=np.zeros([t])
     for n in range(0,t):
         var[n]=eigenvalues[n]/np.sum(eigenvalues)
 
-    print 'A-O'
-    print 'variances'
-    print var[0:t-10]
-    print np.sum(var[:])
+    print('A-O')
+    print('variances')
+    print(var[0:t-10])
+    print(np.sum(var[:]))
 
     #NORMALIZE PCs (MEAN=0# VARIANCE=1)
     pc=np.zeros([t,t])
@@ -148,7 +148,7 @@ def eof_1d(data_in, dimension=0, mask_number=-9999., domask=False):
 
     #convert lat/lon/time to space/time
     D=np.zeros([x,t])
-    print D.flags.writeable
+    print(D.flags.writeable)
     if not input_has_mask:
         D = np.copy(data_in)
     else:
@@ -199,23 +199,23 @@ def eof_1d(data_in, dimension=0, mask_number=-9999., domask=False):
     eigenvectors = eigenvectors[:,order]
 
     
-    print 'eigenvalues'
-    print eigenvalues
-    print  'sum of eigenvalues'
-    print np.sum(eigenvalues)
+    print('eigenvalues')
+    print(eigenvalues)
+    print('sum of eigenvalues')
+    print(np.sum(eigenvalues))
 
     spacing_error_ratio = (eigenvalues[0:t-2]-eigenvalues[1:t-1])/(eigenvalues[0:t-2]*np.sqrt(2./t))  ##  based on North et al. 1982
-    print 'ratio of eigenvalue spacing to relative error'
-    print spacing_error_ratio
+    print('ratio of eigenvalue spacing to relative error')
+    print(spacing_error_ratio)
 
     var=np.zeros([t])
     for n in range(0,t):
         var[n]=eigenvalues[n]/np.sum(eigenvalues)
 
-    print 'A-O'
-    print 'variances'
-    print var[0:t-10]
-    print np.sum(var[:])
+    print('A-O')
+    print('variances')
+    print(var[0:t-10])
+    print(np.sum(var[:]))
 
     #NORMALIZE PCs (MEAN=0# VARIANCE=1)
     pc=np.zeros([t,t])

@@ -23,7 +23,7 @@ def separate_clmhist_bypft(file_in, variable_name=None, IM=None, JM=None, npft=N
         if variable_name == None:
             return pftvars
         else:
-            print('variable '+variable_name+ ' not in pft variable list.')
+            print(('variable '+variable_name+ ' not in pft variable list.'))
             print(pftvars)
             raise RuntimeError
     
@@ -57,7 +57,7 @@ def separate_clmhist_bypft(file_in, variable_name=None, IM=None, JM=None, npft=N
     if ndims_in_wo_pft == 1:
         data_out = np.ma.masked_all(dims_out_size)
         for pft in range(npft):
-            print(' running pft '+str(pft) + ' of '+str(npft))
+            print((' running pft '+str(pft) + ' of '+str(npft)))
             var_in = file_in.variables[variable_name]
             ### now loop over timesteps
             pftlonindices = np.extract(np.logical_and(pftcoords_file.variables['pfts1d_itype_veg'][:] == pft, var_in[0,:] < badno), pftcoords_file.variables['pfts1d_ixy'][:]) -1

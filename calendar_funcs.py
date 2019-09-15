@@ -40,10 +40,10 @@ def julian_2_day_mo(julian, leap):
         else:
             done = True
     if month > 12:
-        print month
-        print day
-        print julian
-        print leap
+        print(month)
+        print(day)
+        print(julian)
+        print(leap)
         sys.exit()
     return day, month
 
