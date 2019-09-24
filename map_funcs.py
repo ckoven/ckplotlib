@@ -3508,7 +3508,7 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         x11_window_list.append(wks)
 
         
-def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=None, ranges=[0.,1.], file=None, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False, labels_space=0.1, margins_space=0.05, plot_xmargins=0.1, dotsize=0.02, parameter_labelsize=0.02, variable_labelsize=0.02, linethickness = 3.):
+def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=None, ranges=[0.,1.], file=None, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False, labels_space=0.1, margins_space=0.05, plot_xmargins=0.1, dotsize=0.02, parameter_labelsize=0.02, variable_labelsize=0.02, linethickness = 3., top_ticks=True, draw_boxes=True, width_factor = 1.):
     """ this function makes one or more stemplots (i.e. look kind of like lollipops), as in for plotting parameter sensitivities.  
     plots are lined up vertically, with stes going to the right."""
     #
@@ -3525,10 +3525,10 @@ def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=Non
     if plot_type == 'x11':
         wks_res.wkPause = False
     elif plot_type == 'png':
-        wks_res.wkWidth = page_width * 100
+        wks_res.wkWidth = page_width * 100 * width_factor
         wks_res.wkHeight = page_height * 100
     else:
-        wks_res.wkPaperWidthF = page_width
+        wks_res.wkPaperWidthF = page_width * width_factor
         wks_res.wkPaperHeightF = page_height
         wks_res.wkOrientation = "portrait"
     #
@@ -3622,15 +3622,26 @@ def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=Non
             # title the plot
             xyplotres.tiMainString = variable_labels[var_i]
             xyplotres.tiMainFontHeightF = variable_labelsize
-            xyplotres.tmXBOn          = False
-            xyplotres.tmXTOn          = True
+            if top_ticks:
+                xyplotres.tmXBOn          = False
+                xyplotres.tmXTOn          = True
+                xyplotres.tmXUseBottom = False
+                xyplotres.tmXTLabelsOn = True
+                xyplotres.tmXTMinorOn    = False
+            else:
+                xyplotres.tmXBOn          = True
+                xyplotres.tmXTOn          = False
+                xyplotres.tmXBLabelsOn = True
+                xyplotres.tmXBMinorOn    = False
             xyplotres.tmYROn          = False
-            xyplotres.tmYRBorderOn    = False
-            xyplotres.tmXBBorderOn    = False
+            if draw_boxes:
+                xyplotres.tmYRBorderOn    = True
+                xyplotres.tmXBBorderOn    = True
+            else:
+                xyplotres.tmYRBorderOn    = False
+                xyplotres.tmXBBorderOn    = False
             xyplotres.tmYROn                  = False
             xyplotres.tmYLOn                  = False
-            xyplotres.tmXUseBottom = False
-            xyplotres.tmXTLabelsOn = True
             #
             dummydata = np.ma.masked_all([2])
             plot = Ngl.xy(wks, dummydata, dummydata, xyplotres)
