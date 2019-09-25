@@ -3508,7 +3508,7 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         x11_window_list.append(wks)
 
         
-def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=None, ranges=[0.,1.], file=None, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False, labels_space=0.1, margins_space=0.05, plot_xmargins=0.1, dotsize=0.02, parameter_labelsize=0.02, variable_labelsize=0.02, linethickness = 3., top_ticks=True, draw_boxes=True, width_factor = 1.):
+def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=None, ranges=[0.,1.], file=None, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False, labels_space=0.1, margins_space=0.05, plot_xmargins=0.1, dotsize=0.02, parameter_labelsize=0.02, variable_labelsize=0.02, linethickness = 3., top_ticks=True, draw_boxes=True, width_factor = 1., maxticks=5, textthickness=1.5):
     """ this function makes one or more stemplots (i.e. look kind of like lollipops), as in for plotting parameter sensitivities.  
     plots are lined up vertically, with stes going to the right."""
     #
@@ -3592,6 +3592,7 @@ def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=Non
             txres = Ngl.Resources()
             txres.txJust = "CenterRight"
             txres.txFontHeightF = parameter_labelsize
+            txres.txFontThicknessF = textthickness
             for par_i in range(nparameters):
                 txt = Ngl.add_text(wks, plot, parameter_labels[par_i], 0., -1.*par_i, txres)
         else:
@@ -3622,17 +3623,22 @@ def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=Non
             # title the plot
             xyplotres.tiMainString = variable_labels[var_i]
             xyplotres.tiMainFontHeightF = variable_labelsize
+            xyplotres.tiMainFontThicknessF = textthickness
             if top_ticks:
                 xyplotres.tmXBOn          = False
                 xyplotres.tmXTOn          = True
                 xyplotres.tmXUseBottom = False
                 xyplotres.tmXTLabelsOn = True
                 xyplotres.tmXTMinorOn    = False
+                xyplotres.tmXTMaxTicks = maxticks
+                xyplotres.tmXTLabelFontThicknessF = textthickness
             else:
                 xyplotres.tmXBOn          = True
                 xyplotres.tmXTOn          = False
                 xyplotres.tmXBLabelsOn = True
                 xyplotres.tmXBMinorOn    = False
+                xyplotres.tmXBMaxTicks = maxticks
+                xyplotres.tmXBLabelFontThicknessF = textthickness
             xyplotres.tmYROn          = False
             if draw_boxes:
                 xyplotres.tmYRBorderOn    = True
@@ -3672,7 +3678,10 @@ def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=Non
     if not file==None:
         Ngl.delete_wks(wks)
         #
-        if makepng:
+        if makepng or showjupyter:
             pdf_to_png(file, density=png_dens)
+        if jupyter_avail and showjupyter:
+            print(' ')
+            display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
