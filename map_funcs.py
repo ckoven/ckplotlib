@@ -3508,3 +3508,171 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         x11_window_list.append(wks)
 
         
+def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=None, ranges=[0.,1.], file=None, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False, labels_space=0.1, margins_space=0.05, plot_xmargins=0.1, dotsize=0.02, parameter_labelsize=0.02, variable_labelsize=0.02, linethickness = 3., top_ticks=True, draw_boxes=True, width_factor = 1.):
+    """ this function makes one or more stemplots (i.e. look kind of like lollipops), as in for plotting parameter sensitivities.  
+    plots are lined up vertically, with stes going to the right."""
+    #
+    plot_type = get_workstation_type(file)
+    #
+    #
+    #
+    wks_res = Ngl.Resources()
+    #
+    wks_res.nglMaximize = False
+    wks_res.nglDraw     = False
+    wks_res.nglFrame    = False
+    #
+    if plot_type == 'x11':
+        wks_res.wkPause = False
+    elif plot_type == 'png':
+        wks_res.wkWidth = page_width * 100 * width_factor
+        wks_res.wkHeight = page_height * 100
+    else:
+        wks_res.wkPaperWidthF = page_width * width_factor
+        wks_res.wkPaperHeightF = page_height
+        wks_res.wkOrientation = "portrait"
+    #
+    wks = Ngl.open_wks(plot_type,file,wks_res)
+    if wks < 0 and plot_type == "x11":
+        clear_oldest_x11_window()
+        wks = Ngl.open_wks(plot_type,file,wks_res)
+    #
+    ## parse the shape of the data, and work from that.
+    ndims_data = len(data)
+    if ndims_data == 1:
+        nvariables = 1
+        nparameters = len(data)
+    else:
+        nvariables = data.shape[0]
+        nparameters = data.shape[1]
+    #
+    if type(overlay_data) != type(None):
+        if overlay_data.shape != data.shape:
+            raise Exception
+    #
+    plots = []
+    #
+    if type(parameter_labels) != type(None):
+        startindx = -1
+        plots_startspace = labels_space + margins_space + plot_xmargins
+    else:
+        startindx = 0
+        plots_startspace = plot_xmargins
+    plots_width = (1. - (plots_startspace + plot_xmargins + margins_space * (nvariables-1))) / nvariables
+    #
+    datay = np.arange(nparameters)
+    #
+    for var_i in range(startindx,nvariables):
+        if var_i < 0:
+            ## this is for making the list of parameters
+            plotres = Ngl.Resources()
+            plotres.nglMaximize = False
+            plotres.nglDraw     = False
+            plotres.nglFrame    = False
+            #
+            # set size of viewport
+            plotres.vpXF = plot_xmargins
+            plotres.vpWidthF = labels_space
+            #
+            # set vertical boundaries of plot
+            plotres.trYMinF = -nparameters
+            plotres.trYMaxF = 1.
+            plotres.trXMinF = -1.
+            plotres.trXMaxF = 0.2
+            plotres.tmXBOn          = False
+            plotres.tmXTOn          = False
+            plotres.tmYROn          = False
+            plotres.tmYLOn          = False
+            plotres.tmYRBorderOn    = False
+            plotres.tmXBBorderOn    = False
+            plotres.tmYLBorderOn    = False
+            plotres.tmXTBorderOn    = False
+            #
+            plot = Ngl.blank_plot(wks, plotres)
+            txres = Ngl.Resources()
+            txres.txJust = "CenterRight"
+            txres.txFontHeightF = parameter_labelsize
+            for par_i in range(nparameters):
+                txt = Ngl.add_text(wks, plot, parameter_labels[par_i], 0., -1.*par_i, txres)
+        else:
+            if ndims_data == 1:
+                datax = data[:]
+                if type(overlay_data) != type(None):
+                    datax_overlay = overlay_data[:]
+            else:
+                datax = data[var_i,:]
+                if type(overlay_data) != type(None):
+                    datax_overlay = overlay_data[var_i,:]
+            #
+            xyplotres = Ngl.Resources()
+            xyplotres.nglMaximize = False
+            xyplotres.nglDraw     = False
+            xyplotres.nglFrame    = False
+            #
+            # set size of viewport
+            xyplotres.vpXF = plots_startspace + (var_i)*(margins_space + plots_width)
+            xyplotres.vpWidthF = plots_width
+            #
+            # set  boundaries of plot
+            xyplotres.trXMinF = ranges[0]
+            xyplotres.trXMaxF = ranges[1]
+            xyplotres.trYMinF = -nparameters
+            xyplotres.trYMaxF = 1.
+            #
+            # title the plot
+            xyplotres.tiMainString = variable_labels[var_i]
+            xyplotres.tiMainFontHeightF = variable_labelsize
+            if top_ticks:
+                xyplotres.tmXBOn          = False
+                xyplotres.tmXTOn          = True
+                xyplotres.tmXUseBottom = False
+                xyplotres.tmXTLabelsOn = True
+                xyplotres.tmXTMinorOn    = False
+            else:
+                xyplotres.tmXBOn          = True
+                xyplotres.tmXTOn          = False
+                xyplotres.tmXBLabelsOn = True
+                xyplotres.tmXBMinorOn    = False
+            xyplotres.tmYROn          = False
+            if draw_boxes:
+                xyplotres.tmYRBorderOn    = True
+                xyplotres.tmXBBorderOn    = True
+            else:
+                xyplotres.tmYRBorderOn    = False
+                xyplotres.tmXBBorderOn    = False
+            xyplotres.tmYROn                  = False
+            xyplotres.tmYLOn                  = False
+            #
+            dummydata = np.ma.masked_all([2])
+            plot = Ngl.xy(wks, dummydata, dummydata, xyplotres)
+            #
+            # now that we've set up plot, loop over variables and draw the content of the stemplot
+            for par_i in range(nparameters):
+                lineres = Ngl.Resources()
+                lineres.gsLineThicknessF = linethickness
+                Ngl.add_polyline(wks, plot, [0.,datax[par_i]], [-par_i,-par_i], lineres)
+                #
+                dotres = Ngl.Resources()
+                dotres.gsMarkerIndex = 16
+                dotres.gsMarkerSizeF = dotsize
+                Ngl.add_polyline(wks, plot, [datax[par_i]], [-par_i], dotres)
+                #
+                if type(overlay_data) != type(None):
+                    dotres = Ngl.Resources()
+                    dotres.gsMarkerIndex = 4
+                    dotres.gsMarkerSizeF = dotsize
+                    Ngl.add_polyline(wks, plot, [datax_overlay[par_i]], [-par_i], dotres)
+            #
+        Ngl.draw(plot)
+        del(plot)
+    #
+    #
+    Ngl.frame(wks)
+    #
+    if not file==None:
+        Ngl.delete_wks(wks)
+        #
+        if makepng:
+            pdf_to_png(file, density=png_dens)
+    else:
+        x11_window_list.append(wks)
