@@ -3431,8 +3431,9 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         clear_oldest_x11_window()
         wks = Ngl.open_wks(plot_type,file,wks_res)
     #
+    ndims_dataarray = len(data_array.shape)
     print(data_array.shape)
-    n_dataframes = data_array.shape[2]
+    n_dataframes = data_array.shape[-1]
     #
     plots = []
     #
@@ -3460,8 +3461,12 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                     ylog = False
                     xlog = False
                 #
-                datax = data_array[:,:,xpos]
-                datay = data_array[:,:,ypos]
+                if ndims_dataarray == 3:
+                    datax = data_array[:,:,xpos]
+                    datay = data_array[:,:,ypos]
+                else:
+                    datax = data_array[:,xpos]
+                    datay = data_array[:,ypos]                    
                 #
                 if type(ranges) == type(None):
                     rangex = [datax.min(), datax.max()]
@@ -3473,7 +3478,10 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                 plots.append(xyplot(datax, datay, linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=rangex, yrange=rangey, use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
             elif xpos == ypos and plot_hists:
                 #
-                data_unsorted = data_array[:,:,xpos]
+                if ndims_dataarray == 3:
+                    data_unsorted = data_array[:,:,xpos]
+                else:
+                    data_unsorted = data_array[:,xpos]                    
                 print(data_unsorted.shape)
                 print(hist_sep.shape)
                 #
@@ -3483,7 +3491,7 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                     hist_sorted = data_unsorted.copy()
                     for i in range(nbins):
                         hist_sorted[i,0] = data_unsorted[i,hist_sep[i]]
-                        hist_sorted[i,1] = data_unsorted[i,1-hist_sep[i]]                        
+                        hist_sorted[i,1] = data_unsorted[i,1-hist_sep[i]]                      
                 if type(ranges) == type(None):
                     rangex = [data_unsorted.min(), data_unsorted.max()]
                 else:
