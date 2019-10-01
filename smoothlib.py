@@ -1,6 +1,11 @@
 import numpy as np
 import math as m
 import sys
+try:
+    import xarray as xr
+    has_xarray = True
+except:
+    has_xarray = False
 
 
 def boxcar_smoother(x, window=1, edge_truncate=None, axis=None, coordinates=None, overlap_dim=1):
@@ -197,6 +202,13 @@ def boxcar_smoother(x, window=1, edge_truncate=None, axis=None, coordinates=None
         return x_smoothed, coords_out
         
 
+def monthly_to_annual_xarray(array):
+    mon_day  = xr.DataArray(np.array([31,28,31,30,31,30,31,31,30,31,30,31]), dims=['month'])
+    mon_wgt  = mon_day/mon_day.sum()
+    return (array.rolling(time=12, center=False) # rolling
+            .construct("month") # construct the array
+            .isel(time=slice(11, None, 12)) # slice so that the first element is [1..12], second is [13..24]
+            .dot(mon_wgt, dims=["month"]))
 
 
 def monthly_to_annual(x, axis=0, nmonths=12, calendar="noleap"):
@@ -215,7 +227,7 @@ def monthly_to_annual(x, axis=0, nmonths=12, calendar="noleap"):
         raise NotImplementedError
     #
     ntim = x.shape[axis]
-    nyears = ntim/nmonths
+    nyears = int(ntim/nmonths)
 
     if ndims == 1:
         if not masked:
