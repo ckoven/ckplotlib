@@ -60,27 +60,15 @@ def clear_oldest_x11_window():
     except:
         print('trying to close the oldest x11 window but none are open!')
 
-pngdens = 150
+pngdens = 100
 
 def pdf_to_png(file, density=pngdens):
     ### call some command-line tools to convert a pdf file to a png file.
     ### this assumes that imagemagick tool convert is available, and will use the latex/perl tool pdfcrop if it is available
     ### first crop the pdf file using the perl script pdfcrop (which is in this directory)
     pwdpath = os.getcwd()
-    try:
-        subprocess.check_output(['which','pdfcrop'])
-        haspdfcrop=True
-    except:
-        haspdfcrop=False
-    if haspdfcrop:
-        subprocess.call(['pdfcrop',pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'_crop.pdf'])
-        command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'_crop.pdf',pwdpath+'/'+file+'.png']
-        subprocess.call(command2stringlist)
-        command3stringlist = ['rm','-f',pwdpath+'/'+file+'_crop.pdf']
-        subprocess.call(command3stringlist)
-    else:
-        command2stringlist = ['convert','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
-        subprocess.check_call(command2stringlist)
+    command2stringlist = ['convert','-bordercolor','white','-border','1x1','-trim','-density',str(density),pwdpath+'/'+file+'.pdf',pwdpath+'/'+file+'.png']
+    subprocess.check_call(command2stringlist)
 
 def parse_colormap(colormap):
     ### this is to allow the user to specify ether the standard list of PyNGL color tables, or alternately a set of predefined color tables, e.g. the colorbrewer maps, etc.
@@ -147,7 +135,9 @@ def parse_colormap(colormap):
                              'tbr_var_0-500', 'temp1', 'temp_19lev', 'temp_diff_18lev', 'temp_diff_1lev',
                              'testcmap', 'thelix', 'topo_15lev', 'uniform', 'wgne15',
                              'wh-bl-gr-ye-re', 'wind_17lev', 'wxpEnIR']
-    if colormap in Ngl_colormap_list_new:
+    if colormap in Ngl_colormap_list_new or type(colormap) == type([]):
+        if type(colormap) == type([]):
+            print(colormap)
         return colormap
     else:
         # if colormap == 'cb_GnBu':
@@ -197,6 +187,10 @@ def parse_colormap(colormap):
                                     [158, 158, 158], [153, 153, 153], [148, 148, 148], [143, 143, 143], [138, 138, 138], [133, 133, 133], [128, 128, 128], [122, 122, 122], [117, 117, 117], [112, 112, 112], [107, 107, 107],
                                     [102, 102, 102], [97, 97, 97], [92, 92, 92], [87, 87, 87], [82, 82, 82], [77, 77, 77], [71, 71, 71], [66, 66, 66], [61, 61, 61], [56, 56, 56], [51, 51, 51],
                                     [46, 46, 46], [41, 41, 41], [36, 36, 36], [31, 31, 31], [26, 26, 26], [20, 20, 20], [15, 15, 15], [10, 10, 10], [5, 5, 5], [0, 0, 0]]) / 256.
+        elif colormap == 'ck_BlueRedBlack':
+            colorvalues = np.array([[256,256,256], [0,0,0], [0,0,256], [256,0,0], [0,0,0]])/256.
+        elif colormap == 'ck_BlueBlackRed':
+            colorvalues = np.array([[256,256,256], [0,0,0], [0,0,256], [0,0,0], [256,0,0]])/256.
         else:
             #raise RuntimeError('colormap name must be either a pyngl named colormap or else from the list of user-defined ones')
             colorvalues = colormap
@@ -391,6 +385,14 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             # else:
             #     resources.mpMaxLatF             = latlimits[1]        # to zoom in on.
             #     resources.mpMinLatF             = latlimits[0]
+    elif projection == "Robinson":
+        resources.mpLimitMode           = "MaximalArea"
+        resources.mpCenterLatF          = 0.
+        resources.mpCenterLonF          = 11.
+        resources.mpPerimOn = False
+        resources.mpGridAndLimbOn =  True
+        resources.mpGridLineColor   = "transparent"     # we don't want lat/lon lines
+        resources.pmTickMarkDisplayMode    = "Never"     # Don't draw tickmark border.
     else:
         resources.mpLimitMode           = "LatLon"   # Specify area of map
         if not nomaplimits:
@@ -416,8 +418,10 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False):
 
+    if showjupyter and type(file)==type(None):
+        file = 'temp_fig_file'
 
     if len(lat.shape) == 1 and len(lon.shape) == 1:
         JM = lat.shape[0]
@@ -769,8 +773,11 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
     if not file==None:
         Ngl.delete_wks(wks)
         #
-        if makepng:
+        if makepng or showjupyter:
             pdf_to_png(file, density=png_dens)
+        if jupyter_avail and showjupyter:
+            print(' ')
+            display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
 
@@ -778,7 +785,10 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
 
 ################################################################################
 
-def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None, overlay_shadederror_ulimit=None, overlay_shadederror_llimit=None, showjupyter=False):
+def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, ytitle=None, xrange=None, yrange=None, colors=None, labels=None, labelorder=None, labelcolors=None, linethickness=2.5, line_opacity=1., overlay_x=None, overlay_y=None, overlay_color=None, overlay_linethickness=2.5, overlay_dots=False, colormap=None, overlay_labels=None, overlay_labelorder=None, overlay_altyaxis=None, overlay_altyaxistitle=None, noyticks=False, noxticks=False, nominorticks=False, norightticks=False, notopticks=False, smallticks=True, outsideticks=True, errorbars=None, overlay_errorbars=None, barwidth=None, dashpattern=None, overlay_dashpattern=None, dashlabels=None, dashlabelpatterns=None, label_xstart=None, label_ystart=None, label_yspace=None, polygons=False, shadederror_thickness=None, shadederror_color=None, shadederror_fillpattern=None, shadederror_thickness_yindepvar=None, labelfontsize=.02, overlaylabelfontsize=None, overlaylabelxstart=None, overlaylabelystart=None, overlaylabel_yspace=None, overlaylabel_xspace=None, aspect_ratio=None, title_charsize=0.75, xlog=False, ylog=False, yreverse=False, box_whisker_plot=False, stack_shade_values=False, minobs_boxplot=3, dotsize=0.02, Nonemask=False, hline=None, hline_color=None, hline_dashpattern=None, vline=None, vline_color=None, vline_dashpattern=None, shaded_dot_data=None, shaded_dot_levels=None, shaded_line_data=None, shaded_line_levels=None, subtitle=None, vband=None, hband=None, overlay_vectors_x=None, overlay_vectors_y=None, overlay_vectors_arrowheadlength=None, overlay_vectors_arrowheadwidth=None, overlay_vectors_forwards=True, overlay_vectors_thickness=1.0, shaded_vectors_data=None, shaded_vectors_levels=None, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, inset_textjust="CenterRight", overlay_shadederror_thickness=None, nobottomticks=False, label_xspace=None, print_regression_stats=False, shadederror_ulimit=None, shadederror_llimit=None, shadederror_opacity=None, overlay_ellipses_x=None, overlay_ellipses_y=None, overlay_ellipses_xaxis=None, overlay_ellipses_yaxis=None, overlay_ellipses_angle=None, overlay_ellipse_thickness=None, overlay_ellipses_filled=False, overlay_ellipses_opacity=None, overlay_ellipses_color=None, shuffle_shaded_dots=False, shuffle_shaded_lines=False, makepng=False, png_dens=pngdens, use_wks=None, overlay_shadederror_ulimit=None, overlay_shadederror_llimit=None, showjupyter=False):
+
+    if showjupyter and type(file)==type(None):
+        file = 'temp_fig_file'
 
     if use_wks == None:
         plot_type = get_workstation_type(file)
@@ -874,6 +884,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 
     else:
         resources.xyLineThicknessF = linethickness
+        resources.xyLineOpacityF = line_opacity
 
     if type(colors) != type(None):
         resources.xyLineColors = colors
@@ -1409,6 +1420,8 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             overlaylabelystart = label_ystart - nlabels * label_yspace
         if overlaylabel_yspace == None:
             overlaylabel_yspace = label_yspace
+        if overlaylabel_xspace == None:
+            overlaylabel_xspace = label_xspace
         for i in range(nlabels_overlay):
             if overlay_color != None:
                 if type(overlay_color) == type(3) or type(overlay_color) == type("a string"):
@@ -1417,7 +1430,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                     if overlay_color[i] >= 0:
                         resources.txFontColor = overlay_color[i]
             ### print(overlay_labels[i],overlaylabelxstart,overlaylabelystart+overlay_labelorder[i] * label_yspace)
-            pstring = Ngl.add_text(wks,plot,overlay_labels[i],overlaylabelxstart,overlaylabelystart+overlay_labelorder[i] * overlaylabel_yspace,resources)
+            pstring = Ngl.add_text(wks,plot,overlay_labels[i],overlaylabelxstart+overlay_labelorder[i] * overlaylabel_xspace,overlaylabelystart+overlay_labelorder[i] * overlaylabel_yspace,resources)
             
     if dashlabels != None and dashlabelpatterns != None:
         try:
@@ -1844,10 +1857,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             resources = Ngl.Resources()
             resources.gsLineColor = colorbars_int[marker_colorlevel[ii]]
             resources.gsLineThicknessF = linethickness
+            resources.gsLineOpacityF = line_opacity
             pmarker = Ngl.add_polyline(wks, plot, x[ii,:], y[ii,:], resources)
 
 
-    if (overlay_vectors_x != None) and (overlay_vectors_y != None):
+    if (type(overlay_vectors_x) != type(None)) and (type(overlay_vectors_y) != type(None)):
         # draw arrows on plot.  assume x and y arguments are nx2 arrays, with the first column being the arrow start and the second column being the arrow end
         if overlay_vectors_x.shape != overlay_vectors_y.shape:
             raise RuntimeError
@@ -1864,6 +1878,7 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
             overlay_vectors_arrowheadwidth = 0.1
         for i in range(narrows):
             arrow_res = Ngl.Resources()
+            arrow_res.gsLineThicknessF = overlay_vectors_thickness
             try:
                 if overlay_vectors_forwards:
                     arrow_x, arrow_y = make_arrow(overlay_vectors_x[i,0], overlay_vectors_y[i,0], overlay_vectors_x[i,1], overlay_vectors_y[i,1], overlay_vectors_arrowheadlength, overlay_vectors_arrowheadwidth)
@@ -1920,7 +1935,6 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 pdf_to_png(file, density=png_dens)
             if jupyter_avail and showjupyter:
                 print(' ')
-                print('showing file '+file)
                 display(Image(file+'.png'))
         else:
             x11_window_list.append(wks)
@@ -1935,6 +1949,9 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
 def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, weights_in=None, ytitle="", xtitle="", bar_width=1.0, yaxis_top=None, zeroline=False, maxlabels=10, label_binedges=True, writemean=False, axis=None, colors=None, colormap=None, thickness=2.5, labels=None, labelorder=None, label_xstart=None, label_ystart=None, label_yspace=None, aspect_ratio=None, meanline=False, histstyle="steps", ylabels=True, title=None, lineup_peakheights=False, hist_scales=None, labelsize=.02, cumulative=False, inverse_cumulative=False, flip_XY=False, yreverse=False, labelcolors=None, vlines=None, vlines_dashpattern=None, vband=None, return_histstats=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_fontsize=0.03, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False):  #scaled_cumulative_output=False
 
     ## takes as fundamental argument, data_in, either a single numpy array or a list of numpy arrays
+
+    if showjupyter and type(file)==type(None):
+        file = 'temp_fig_file'
 
     if use_wks == None:
         plot_type = get_workstation_type(file)
@@ -2179,7 +2196,7 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
             hist_res.tmYLMinorLengthF        = 0.005
             hist_res.tmYLMinorOutwardLengthF = 0.005
             hist_res.tmXBLabelAngleF         = 90.  ## rotate x-axis labels
-            hist_res.tmXBLabelJust     = "CenterLeft"
+            hist_res.tmXBLabelJust     = "CenterRight"
 
 
             if aspect_ratio != None:
@@ -2434,7 +2451,6 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                     pdf_to_png(file, density=png_dens)
                 if jupyter_avail and showjupyter:
                     print(' ')
-                    print('showing file '+file)
                     display(Image(file+'.png'))
                 return output_binedges, output_binfreq
             else:   
@@ -2443,7 +2459,6 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
                     pdf_to_png(file, density=png_dens)
                 if jupyter_avail and showjupyter:
                     print(' ')
-                    print('showing file '+file)
                     display(Image(file+'.png'))
             #
         else:
@@ -2456,13 +2471,16 @@ def plot_histogram(data_in, bins=10, file=None, therange=None, normed=False, wei
 
 
 ################
-def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None, makepng=False, png_dens=pngdens):
+def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=None, title=None, subtitle=None, aspect_ratio=None, overlay_contour_data=None, overlay_contour_levels=None, xrange=None, yrange=None, xlog=False, ylog=False, yreverse=False, linelabels=False,ytitle=None, xtitle=None, pixels=False, colormap=None, reverse_colors=False, expand_colormap_middle=None, overlay_x=None, overlay_y=None, overlay_dots=False, overlay_color=None, overlay_linethickness=2.5, overlay_dashpattern=None, overlay_color_list=None, makepng=False, png_dens=pngdens, showjupyter=False):
     IM = x.shape[0]
     JM = y.shape[0]
     data = np.squeeze(data[:])
 
     # if data.shape != (JM,IM):
     #     raise SizeMismatchError
+
+    if showjupyter and type(file)==type(None):
+        file = 'temp_fig_file'
 
     plot_type = get_workstation_type(file)
 
@@ -2789,8 +2807,11 @@ def fill_nomap(data, x, y, contour_fill=False, contour=False, levels=None, file=
     if not file==None:
         Ngl.delete_wks(wks)
         #
-        if makepng:
+        if makepng or showjupyter:
             pdf_to_png(file, density=png_dens)
+        if jupyter_avail and showjupyter:
+            print(' ')
+            display(Image(file+'.png'))
     else:
         x11_window_list.append(wks)
 
@@ -3410,8 +3431,9 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         clear_oldest_x11_window()
         wks = Ngl.open_wks(plot_type,file,wks_res)
     #
+    ndims_dataarray = len(data_array.shape)
     print(data_array.shape)
-    n_dataframes = data_array.shape[2]
+    n_dataframes = data_array.shape[-1]
     #
     plots = []
     #
@@ -3439,8 +3461,12 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                     ylog = False
                     xlog = False
                 #
-                datax = data_array[:,:,xpos]
-                datay = data_array[:,:,ypos]
+                if ndims_dataarray == 3:
+                    datax = data_array[:,:,xpos]
+                    datay = data_array[:,:,ypos]
+                else:
+                    datax = data_array[:,xpos]
+                    datay = data_array[:,ypos]                    
                 #
                 if type(ranges) == type(None):
                     rangex = [datax.min(), datax.max()]
@@ -3452,7 +3478,10 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                 plots.append(xyplot(datax, datay, linethickness=0.1, shaded_line_data=colors, shaded_line_levels=levels,xrange=rangex, yrange=rangey, use_wks=wks, ytitle=ytitle, xtitle=xtitle, xlog=xlog, ylog=ylog))
             elif xpos == ypos and plot_hists:
                 #
-                data_unsorted = data_array[:,:,xpos]
+                if ndims_dataarray == 3:
+                    data_unsorted = data_array[:,:,xpos]
+                else:
+                    data_unsorted = data_array[:,xpos]                    
                 print(data_unsorted.shape)
                 print(hist_sep.shape)
                 #
@@ -3462,7 +3491,7 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
                     hist_sorted = data_unsorted.copy()
                     for i in range(nbins):
                         hist_sorted[i,0] = data_unsorted[i,hist_sep[i]]
-                        hist_sorted[i,1] = data_unsorted[i,1-hist_sep[i]]                        
+                        hist_sorted[i,1] = data_unsorted[i,1-hist_sep[i]]                      
                 if type(ranges) == type(None):
                     rangex = [data_unsorted.min(), data_unsorted.max()]
                 else:
@@ -3487,3 +3516,180 @@ def pairplot(data_array, colors=None, levels=None, title=None, file=None, datati
         x11_window_list.append(wks)
 
         
+def stemplot(data, parameter_labels=None, variable_labels=None, overlay_data=None, ranges=[0.,1.], file=None, makepng=False, png_dens=pngdens, use_wks=None, showjupyter=False, labels_space=0.1, margins_space=0.05, plot_xmargins=0.1, dotsize=0.02, parameter_labelsize=0.02, variable_labelsize=0.02, linethickness = 3., top_ticks=True, draw_boxes=True, width_factor = 1., maxticks=5, textthickness=1.5):
+    """ this function makes one or more stemplots (i.e. look kind of like lollipops), as in for plotting parameter sensitivities.  
+    plots are lined up vertically, with stes going to the right."""
+    #
+    plot_type = get_workstation_type(file)
+    #
+    #
+    #
+    wks_res = Ngl.Resources()
+    #
+    wks_res.nglMaximize = False
+    wks_res.nglDraw     = False
+    wks_res.nglFrame    = False
+    #
+    if plot_type == 'x11':
+        wks_res.wkPause = False
+    elif plot_type == 'png':
+        wks_res.wkWidth = page_width * 100 * width_factor
+        wks_res.wkHeight = page_height * 100
+    else:
+        wks_res.wkPaperWidthF = page_width * width_factor
+        wks_res.wkPaperHeightF = page_height
+        wks_res.wkOrientation = "portrait"
+    #
+    wks = Ngl.open_wks(plot_type,file,wks_res)
+    if wks < 0 and plot_type == "x11":
+        clear_oldest_x11_window()
+        wks = Ngl.open_wks(plot_type,file,wks_res)
+    #
+    ## parse the shape of the data, and work from that.
+    ndims_data = len(data)
+    if ndims_data == 1:
+        nvariables = 1
+        nparameters = len(data)
+    else:
+        nvariables = data.shape[0]
+        nparameters = data.shape[1]
+    #
+    if type(overlay_data) != type(None):
+        if overlay_data.shape != data.shape:
+            raise Exception
+    #
+    plots = []
+    #
+    if type(parameter_labels) != type(None):
+        startindx = -1
+        plots_startspace = labels_space + margins_space + plot_xmargins
+    else:
+        startindx = 0
+        plots_startspace = plot_xmargins
+    plots_width = (1. - (plots_startspace + plot_xmargins + margins_space * (nvariables-1))) / nvariables
+    #
+    datay = np.arange(nparameters)
+    #
+    for var_i in range(startindx,nvariables):
+        if var_i < 0:
+            ## this is for making the list of parameters
+            plotres = Ngl.Resources()
+            plotres.nglMaximize = False
+            plotres.nglDraw     = False
+            plotres.nglFrame    = False
+            #
+            # set size of viewport
+            plotres.vpXF = plot_xmargins
+            plotres.vpWidthF = labels_space
+            #
+            # set vertical boundaries of plot
+            plotres.trYMinF = -nparameters
+            plotres.trYMaxF = 1.
+            plotres.trXMinF = -1.
+            plotres.trXMaxF = 0.2
+            plotres.tmXBOn          = False
+            plotres.tmXTOn          = False
+            plotres.tmYROn          = False
+            plotres.tmYLOn          = False
+            plotres.tmYRBorderOn    = False
+            plotres.tmXBBorderOn    = False
+            plotres.tmYLBorderOn    = False
+            plotres.tmXTBorderOn    = False
+            #
+            plot = Ngl.blank_plot(wks, plotres)
+            txres = Ngl.Resources()
+            txres.txJust = "CenterRight"
+            txres.txFontHeightF = parameter_labelsize
+            txres.txFontThicknessF = textthickness
+            for par_i in range(nparameters):
+                txt = Ngl.add_text(wks, plot, parameter_labels[par_i], 0., -1.*par_i, txres)
+        else:
+            if ndims_data == 1:
+                datax = data[:]
+                if type(overlay_data) != type(None):
+                    datax_overlay = overlay_data[:]
+            else:
+                datax = data[var_i,:]
+                if type(overlay_data) != type(None):
+                    datax_overlay = overlay_data[var_i,:]
+            #
+            xyplotres = Ngl.Resources()
+            xyplotres.nglMaximize = False
+            xyplotres.nglDraw     = False
+            xyplotres.nglFrame    = False
+            #
+            # set size of viewport
+            xyplotres.vpXF = plots_startspace + (var_i)*(margins_space + plots_width)
+            xyplotres.vpWidthF = plots_width
+            #
+            # set  boundaries of plot
+            xyplotres.trXMinF = ranges[0]
+            xyplotres.trXMaxF = ranges[1]
+            xyplotres.trYMinF = -nparameters
+            xyplotres.trYMaxF = 1.
+            #
+            # title the plot
+            xyplotres.tiMainString = variable_labels[var_i]
+            xyplotres.tiMainFontHeightF = variable_labelsize
+            xyplotres.tiMainFontThicknessF = textthickness
+            if top_ticks:
+                xyplotres.tmXBOn          = False
+                xyplotres.tmXTOn          = True
+                xyplotres.tmXUseBottom = False
+                xyplotres.tmXTLabelsOn = True
+                xyplotres.tmXTMinorOn    = False
+                xyplotres.tmXTMaxTicks = maxticks
+                xyplotres.tmXTLabelFontThicknessF = textthickness
+            else:
+                xyplotres.tmXBOn          = True
+                xyplotres.tmXTOn          = False
+                xyplotres.tmXBLabelsOn = True
+                xyplotres.tmXBMinorOn    = False
+                xyplotres.tmXBMaxTicks = maxticks
+                xyplotres.tmXBLabelFontThicknessF = textthickness
+            xyplotres.tmYROn          = False
+            if draw_boxes:
+                xyplotres.tmYRBorderOn    = True
+                xyplotres.tmXBBorderOn    = True
+            else:
+                xyplotres.tmYRBorderOn    = False
+                xyplotres.tmXBBorderOn    = False
+            xyplotres.tmYROn                  = False
+            xyplotres.tmYLOn                  = False
+            #
+            dummydata = np.ma.masked_all([2])
+            plot = Ngl.xy(wks, dummydata, dummydata, xyplotres)
+            #
+            # now that we've set up plot, loop over variables and draw the content of the stemplot
+            for par_i in range(nparameters):
+                lineres = Ngl.Resources()
+                lineres.gsLineThicknessF = linethickness
+                Ngl.add_polyline(wks, plot, [0.,datax[par_i]], [-par_i,-par_i], lineres)
+                #
+                dotres = Ngl.Resources()
+                dotres.gsMarkerIndex = 16
+                dotres.gsMarkerSizeF = dotsize
+                Ngl.add_polyline(wks, plot, [datax[par_i]], [-par_i], dotres)
+                #
+                if type(overlay_data) != type(None):
+                    dotres = Ngl.Resources()
+                    dotres.gsMarkerIndex = 4
+                    dotres.gsMarkerSizeF = dotsize
+                    Ngl.add_polyline(wks, plot, [datax_overlay[par_i]], [-par_i], dotres)
+            #
+        Ngl.draw(plot)
+        del(plot)
+    #
+    #
+    Ngl.frame(wks)
+    #
+    if not file==None:
+        Ngl.delete_wks(wks)
+        #
+        if makepng or showjupyter:
+            pdf_to_png(file, density=png_dens)
+        if jupyter_avail and showjupyter:
+            print(' ')
+            display(Image(file+'.png'))
+    else:
+        x11_window_list.append(wks)
