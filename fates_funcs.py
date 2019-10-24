@@ -169,11 +169,6 @@ def popsicle_diagram(restartfile, param_file, pftcolors, stemcolor=159, file=Non
                             px = [rhs,rhs,lhs,lhs,rhs]
                             py = [ctop,cbot,cbot,ctop,ctop]
                             #
-                            if l > 0:
-                                Ngl.add_polygon(wks,plot,px,py,shadow_res)
-                            #
-                            Ngl.add_polygon(wks,plot,px,py,crown_res)
-                            #
                             stem_center = (lhs + rhs) /2.
                             stem_width = .00001 * restartfile.variables['fates_dbh'][cindx]
                             stem_res2.gsFillColor = stemcolor
@@ -181,6 +176,11 @@ def popsicle_diagram(restartfile, param_file, pftcolors, stemcolor=159, file=Non
                             sy = [cbot,0.,0.,cbot,cbot]
                             Ngl.add_polyline(wks,plot,sx,sy,stem_res1)
                             Ngl.add_polygon(wks,plot,sx,sy,stem_res2)
+                            #
+                            if l > 0:
+                                Ngl.add_polygon(wks,plot,px,py,shadow_res)
+                            #
+                            Ngl.add_polygon(wks,plot,px,py,crown_res)
                             #
                             cohort_rhs = lhs
                             #if lhs < patch_lower_edge:
