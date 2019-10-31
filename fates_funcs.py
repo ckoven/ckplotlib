@@ -119,81 +119,77 @@ def popsicle_diagram(restartfile, param_file, pftcolors, stemcolor=159, file=Non
     max_coh_per_patch = 100
     max_cohorts = len(restartfile.variables['fates_CohortsPerPatch'][:])
     max_patches = max_cohorts / max_coh_per_patch
-    try:
-        maxcanlev = restartfile.variables['fates_canopy_layer'][:].max()
-        cohort_rhs = np.zeros(maxcanlev)
-        ## iterate over patches
-        patch_area_sofar = 0.
-        vline_res = Ngl.Resources
-        vline_res.gsLineThicknessF = .01
+    maxcanlev = restartfile.variables['fates_canopy_layer'][:].max()
+    cohort_rhs = np.zeros(maxcanlev)
+    ## iterate over patches
+    patch_area_sofar = 0.
+    vline_res = Ngl.Resources
+    vline_res.gsLineThicknessF = .01
+    #
+    crown_res = Ngl.Resources()
+    crown_res.gsLineColor            = "black"
+    crown_res.gsLineThicknessF       = .01
+    crown_res.gsEdgesOn              = True
+    crown_res.gsFillOpacityF         = 0.5
+    #
+    shadow_res = Ngl.Resources()
+    shadow_res.gsFillColor            = "black"
+    shadow_res.gsEdgesOn              = False
+    #
+    stem_res1 = Ngl.Resources()
+    stem_res1.gsLineThicknessF       = 1.
+    stem_res1.gsEdgesOn              = True
+    stem_res1.gsLineColor            = "black"
+    #
+    stem_res2 = Ngl.Resources()
+    stem_res2.gsEdgesOn              = False
+    stem_res2.gsFillOpacityF         = 1.
+    #
+    for i in range(max_patches):
+        ## draw thin vertical line at patch lower boundary edge to delineate patches
+        patch_lower_edge = 1.-patch_area_sofar - restartfile.variables['fates_area'][i*max_coh_per_patch]/1e4
+        zlx = [patch_lower_edge, patch_lower_edge]
+        zly = [0., 1000.]
+        Ngl.add_polyline(wks,plot, zlx, zly, vline_res)
         #
-        crown_res = Ngl.Resources()
-        crown_res.gsLineColor            = "black"
-        crown_res.gsLineThicknessF       = .01
-        crown_res.gsEdgesOn              = True
-        crown_res.gsFillOpacityF         = 0.5
+        ## iterate over cohorts
+        for l in range(maxcanlev-1,-1,-1):
+            shadow_res.gsFillOpacity = l * 0.5
+            cohort_rhs = 1. - patch_area_sofar
+            if restartfile.variables['fates_CohortsPerPatch'][i*max_coh_per_patch] > 0:
+                for j in range(restartfile.variables['fates_CohortsPerPatch'][i*max_coh_per_patch]-1,-1,-1):
+                    cindx = i * max_coh_per_patch + j
+                    if restartfile.variables['fates_canopy_layer'][cindx]-1 == l:
+                        rhs = cohort_rhs
+                        lhs = rhs - cohort_crownareas[cindx]/1e4
+                        ctop = restartfile.variables['fates_height'][cindx]
+                        cbot = ctop * 0.6
+                        crown_res.gsFillColor = pftcolors[restartfile.variables['fates_pft'][cindx]-1]
+                        px = [rhs,rhs,lhs,lhs,rhs]
+                        py = [ctop,cbot,cbot,ctop,ctop]
+                        #
+                        stem_center = (lhs + rhs) /2.
+                        stem_width = .00001 * restartfile.variables['fates_dbh'][cindx]
+                        stem_res2.gsFillColor = stemcolor
+                        sx = [stem_center+stem_width,stem_center+stem_width,stem_center-stem_width,stem_center-stem_width,stem_center+stem_width]
+                        sy = [cbot,0.,0.,cbot,cbot]
+                        Ngl.add_polyline(wks,plot,sx,sy,stem_res1)
+                        Ngl.add_polygon(wks,plot,sx,sy,stem_res2)
+                        #
+                        if l > 0:
+                            Ngl.add_polygon(wks,plot,px,py,shadow_res)
+                        #
+                        Ngl.add_polygon(wks,plot,px,py,crown_res)
+                        #
+                        cohort_rhs = lhs
+                        #if lhs < patch_lower_edge:
+                        #    raise Exception
         #
-        shadow_res = Ngl.Resources()
-        shadow_res.gsFillColor            = "black"
-        shadow_res.gsEdgesOn              = False
+        ## get cohort properties: height, upper horizontal edge, crown area, pft, canopy layer
         #
-        stem_res1 = Ngl.Resources()
-        stem_res1.gsLineThicknessF       = 1.
-        stem_res1.gsEdgesOn              = True
-        stem_res1.gsLineColor            = "black"
+        ## draw cohort as popsicle
         #
-        stem_res2 = Ngl.Resources()
-        stem_res2.gsEdgesOn              = False
-        stem_res2.gsFillOpacityF         = 1.
-        #
-        for i in range(max_patches):
-            ## draw thin vertical line at patch lower boundary edge to delineate patches
-            patch_lower_edge = 1.-patch_area_sofar - restartfile.variables['fates_area'][i*max_coh_per_patch]/1e4
-            zlx = [patch_lower_edge, patch_lower_edge]
-            zly = [0., 1000.]
-            Ngl.add_polyline(wks,plot, zlx, zly, vline_res)
-            #
-            ## iterate over cohorts
-            for l in range(maxcanlev-1,-1,-1):
-                shadow_res.gsFillOpacity = l * 0.5
-                cohort_rhs = 1. - patch_area_sofar
-                if restartfile.variables['fates_CohortsPerPatch'][i*max_coh_per_patch] > 0:
-                    for j in range(restartfile.variables['fates_CohortsPerPatch'][i*max_coh_per_patch]-1,-1,-1):
-                        cindx = i * max_coh_per_patch + j
-                        if restartfile.variables['fates_canopy_layer'][cindx]-1 == l:
-                            rhs = cohort_rhs
-                            lhs = rhs - cohort_crownareas[cindx]/1e4
-                            ctop = restartfile.variables['fates_height'][cindx]
-                            cbot = ctop * 0.6
-                            crown_res.gsFillColor = pftcolors[restartfile.variables['fates_pft'][cindx]-1]
-                            px = [rhs,rhs,lhs,lhs,rhs]
-                            py = [ctop,cbot,cbot,ctop,ctop]
-                            #
-                            stem_center = (lhs + rhs) /2.
-                            stem_width = .00001 * restartfile.variables['fates_dbh'][cindx]
-                            stem_res2.gsFillColor = stemcolor
-                            sx = [stem_center+stem_width,stem_center+stem_width,stem_center-stem_width,stem_center-stem_width,stem_center+stem_width]
-                            sy = [cbot,0.,0.,cbot,cbot]
-                            Ngl.add_polyline(wks,plot,sx,sy,stem_res1)
-                            Ngl.add_polygon(wks,plot,sx,sy,stem_res2)
-                            #
-                            if l > 0:
-                                Ngl.add_polygon(wks,plot,px,py,shadow_res)
-                            #
-                            Ngl.add_polygon(wks,plot,px,py,crown_res)
-                            #
-                            cohort_rhs = lhs
-                            #if lhs < patch_lower_edge:
-                            #    raise Exception
-            #
-            ## get cohort properties: height, upper horizontal edge, crown area, pft, canopy layer
-            #
-            ## draw cohort as popsicle
-            #
-            patch_area_sofar = patch_area_sofar + restartfile.variables['fates_area'][i*max_coh_per_patch]/1e4
-
-    except:
-        print('that didnt work')
+        patch_area_sofar = patch_area_sofar + restartfile.variables['fates_area'][i*max_coh_per_patch]/1e4
     if use_wks == None:
         Ngl.draw(plot)
         Ngl.frame(wks)
