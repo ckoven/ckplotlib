@@ -418,7 +418,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False, plot_lat_profiles=None):
 
     if showjupyter and type(file)==type(None):
         file = 'temp_fig_file'
@@ -474,10 +474,12 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
     if file == None:
         wks_res.wkPause = True
     else:
-        wks_res.wkPaperWidthF = page_width
         wks_res.wkPaperHeightF = page_height
         wks_res.wkOrientation = "portrait"
-        
+        if type(plot_lat_profiles) == type(None):
+            wks_res.wkPaperWidthF = page_width
+        else:
+            wks_res.wkPaperWidthF = page_width * 1.3
 
     mp_resources = Ngl.Resources()
     mp_resources.cnFillOn          = True
@@ -537,6 +539,9 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
         mp_resources.cnLevels = levels
     mp_resources.nglFrame = False
     mp_resources.nglDraw = True
+
+    if type(plot_lat_profiles) != type(None):
+        mp_resources.nglMaximize = False
 
     if suppress_latlonlabels == True:
         mp_resources.tmXBLabelsOn	    = False
@@ -769,6 +774,20 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
         if type(overlay_polyline_dashpattern) != type(None):
             resources.gsLineDashPattern = overlay_polyline_dashpattern
         overlay_polyline = Ngl.polyline(wks, plot, overlay_polyline_x, overlay_polyline_y, resources)
+
+    if type(plot_lat_profiles) != type(None):
+        latprof_res = Ngl.Resources()
+        latprof_res.nglMaximize = False
+        latprof_res.vpXF = 0.83
+        latprof_res.vpYF = 0.65
+        latprof_res.vpHeightF = 0.3
+        latprof_res.vpWidthF = 0.17
+        #
+        latprof_res.tmXBMinorOn    = False
+        latprof_res.tmYLMinorOn    = False
+        #
+        ys = np.random.randn(len(lat))
+        Ngl.xy(wks, ys, lat, latprof_res)
               
     if not file==None:
         Ngl.delete_wks(wks)
