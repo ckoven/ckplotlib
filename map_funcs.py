@@ -418,7 +418,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False, plot_lat_profiles=None):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False, plot_lat_profiles=None, plot_lat_profile_colors=None):
 
     if showjupyter and type(file)==type(None):
         file = 'temp_fig_file'
@@ -781,14 +781,25 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
         latprof_res.vpXF = 0.83
         latprof_res.vpYF = 0.65
         latprof_res.vpHeightF = 0.3
-        latprof_res.vpWidthF = 0.17
+        latprof_res.vpWidthF = 0.15
         #
         latprof_res.tmXBMinorOn    = False
         latprof_res.tmYLMinorOn    = False
+        latprof_res.tmXBPrecision = 1
+        latprof_res.tmXBMaxTicks = 5
         #
-        ys = np.random.randn(len(lat))
-        Ngl.xy(wks, ys, lat, latprof_res)
-              
+        borderlinethickness = 1.
+        latprof_res.tmBorderThicknessF = borderlinethickness
+        latprof_res.xyLineThicknessF = 1.
+        latprof_res.tmXBMajorThicknessF = borderlinethickness
+        latprof_res.tmXTMajorThicknessF = borderlinethickness
+        latprof_res.tmYRMajorThicknessF = borderlinethickness
+        latprof_res.tmYLMajorThicknessF = borderlinethickness        
+        #
+        if type(plot_lat_profile_colors) != type(None):
+            latprof_res.xyLineColors = plot_lat_profile_colors
+        Ngl.xy(wks, plot_lat_profiles, lat, latprof_res)
+                
     if not file==None:
         Ngl.delete_wks(wks)
         #
