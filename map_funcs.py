@@ -418,7 +418,7 @@ def map_proj_setup(resources, lon=None, lat=None, polar=None, projection=None, l
             resources.mpCenterLonF          = loncenter
 
 
-def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False, plot_lat_profiles=None, plot_lat_profile_colors=None):
+def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", filltype="cell", contour=False, levels=None, file=None, outline_cells=None, title=None, subtitle=None, level_colors=None, aspect_ratio=None, latlimits=None, lonlimits=None, grid=False, latcenter=None, loncenter=None, specialprojection=None, nomaplimits=False, vector_delta_lat=None, vector_delta_lon=None, vector_lat=None, vector_lon=None, vector_greatcircle=True, vector_arrowheadlength=1.5, vector_arrowheadwidth=1.5, vector_color=None, vector_arrow_thickness=1., vector_arrows_forwards=True, colormap="wh-bl-gr-ye-re", overlay_contour_data=None, overlay_contour_levels=None, overlay_contour_lat=None, overlay_contour_lon=None, overlay_contour_colors=None, overlay_contour_thickness=None, overlay_contour_patterns=None, suppress_colorbar=False, suppress_latlonlabels=False, inset_title=None, inset_title_x=None, inset_title_y=None, inset_title_y_list=None, inset_title_x_list=None, inset_title_colors=None, inset_title_yspace=None, inset_title_xspace=0., inset_title_fontsize=0.025, max_ws_size=None, contour_fill=False, override_boundaries=None, station_names=None, station_lats=None, station_lons=None, station_symbol="star_5point", add_colors=None, OutlineBoundarySets=None, reverse_colors=False, expand_colormap_middle=None, thinshorelines=False, overlay_polyline_x=None, overlay_polyline_y=None, overlay_polyline_color=None, overlay_polyline_thickness=None, overlay_polyline_dashpattern=None, makepng=False, png_dens=pngdens, showjupyter=False, plot_lat_profiles=None, plot_lat_profile_colors=None):
 
     if showjupyter and type(file)==type(None):
         file = 'temp_fig_file'
@@ -649,7 +649,7 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
         #Ngl.draw(plot)
 
     ## overlay_contours
-    if overlay_contour_data != None:
+    if type(overlay_contour_data) != type(None):
 
         # 
         # Copy just the contour resources from mpres to a new resource list (cnres).
@@ -659,29 +659,44 @@ def fill(data, lat, lon, polar=None, projection="CylindricalEquidistant", fillty
           if (t[0:2] == 'cn' or t[0:2] == 'sf' or t[0:3] == 'ngl'):
               setattr(cnres,t,getattr(mp_resources,t))
         #
-        if overlay_contour_lon != None:
+        if type(overlay_contour_lon) != type(None):
             cnres.sfXArray        = overlay_contour_lon[:]
         else:
             cnres.sfXArray        = lon[:]                
-        if overlay_contour_lon != None:
+        if type(overlay_contour_lon) != type(None):
             cnres.sfYArray        = overlay_contour_lat[:]
         else:
             cnres.sfYArray        = lat[:]        
         #
-        cnres.cnFillOn          = False
-        cnres.cnLinesOn         = True
+        if type(overlay_contour_patterns) == type(None):
+            cnres.cnFillOn          = False
+            cnres.cnLinesOn         = True
+        else:
+            cnres.cnFillOn          = True
+            cnres.cnLinesOn         = False
+            cnres.cnFillMode        = 'AreaFill'
         cnres.nglDraw = False
         cnres.nglFrame = False
         cnres.lbLabelBarOn = False
         cnres.lbLabelsOn = False
         cnres.cnInfoLabelOn = False
-        if overlay_contour_levels != None:
+        if type(overlay_contour_levels) != type(None):
             cnres.cnLevelSelectionMode      = 'ExplicitLevels'
             cnres.cnLevels = overlay_contour_levels
         cnres.cnLineThicknessF  = 0.2
-        if overlay_contour_colors != None:
+        if type(overlay_contour_colors) != type(None):
             cnres.cnLineColors = overlay_contour_colors
-        if overlay_contour_thickness != None:
+        if type(overlay_contour_patterns) != type(None):
+            cnres.cnFillPatterns = overlay_contour_patterns
+            #cnres.cnFillColors = 'Black'
+            #cnres.cnFillColor = 'Black'            
+            cnres.MonoFillColor = True
+            cnres.cnLineDrawOrder      = "Postdraw" # Draw lines and filled
+            cnres.cnFillDrawOrder      = "Postdraw" # areas before map gets
+            cnres.nglSpreadColorStart     = 1
+            cnres.nglSpreadColorEnd     = 1
+            #cnres.cnFillDotSizeF  = 0.00001
+        if type(overlay_contour_thickness) != type(None):
             cnres.cnLineThicknessF  = overlay_contour_thickness
         #
         contour_overlay = Ngl.contour(wks, overlay_contour_data, cnres)
