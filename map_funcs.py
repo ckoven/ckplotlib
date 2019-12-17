@@ -1388,8 +1388,11 @@ def xyplot(x, y, file=None, dots=False, regress=False, title=None, xtitle=None, 
                 if labelcolors[i] >= 0:
                     resources.txFontColor = labelcolors[i]
             elif type(colors) != type(None):
-                if colors[i] >= 0:
+                if type(colors[i]) == type("a string"):
                     resources.txFontColor = colors[i]
+                else:
+                    if colors[i] >= 0:
+                        resources.txFontColor = colors[i]
             if not xlog:
                 xpos = label_xstart+labelorder[i]*label_xspace
             else:
